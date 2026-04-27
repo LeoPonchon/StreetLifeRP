@@ -1,0 +1,27 @@
+name: StreetLifeRP
+version: '1.0'
+main: org.shimakuro.streetLifeRP.StreetLifeRP
+api-version: '1.21'
+
+permissions:
+  streetliferp.admin.reload:
+    description: Permet de recharger StreetLifeRP
+    default: op
+  streetliferp.admin.character.delete:
+    description: Permet de supprimer le personnage d'un joueur (admin)
+    default: op
+  streetliferp.admin.item.give:
+    description: Permet de donner des items spéciaux (admin)
+    default: op
+  streetliferp.admin.job.set:
+    description: Permet de changer son métier (admin)
+    default: op
+  streetliferp.police:
+    description: Accès aux commandes police
+    default: op
+  streetliferp.ems:
+    description: Accès aux commandes EMS
+    default: op
+  streetliferp.dispatch.receive:
+    description: Reçoit les appels 911
+    default: op

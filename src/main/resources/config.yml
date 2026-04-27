@@ -1,0 +1,84 @@
+messages:
+  prefix: "&7[&bStreetLifeRP&7] &r"
+
+economy:
+  currency_symbol: "$"
+  starting_cash: 500.0
+  starting_bank: 0.0
+
+antiabuse:
+  cooldowns_seconds:
+    money_transfer: 2
+    bank_deposit: 2
+    bank_withdraw: 2
+    shop_buy: 1
+    job_work: 2
+    fine_pay: 2
+    theft: 2
+    storage: 2
+    chat_me: 1
+    chat_do: 1
+    chat_ooc: 1
+    chat_tweet: 3
+    phone_sms: 2
+    cash_redeem: 1
+    emergency_call: 5
+
+jobs:
+  unemployed:
+    salary: 0.0
+    cooldown_seconds: 300
+  delivery:
+    salary: 75.0
+    cooldown_seconds: 300
+  mechanic:
+    salary: 90.0
+    cooldown_seconds: 300
+  police:
+    salary: 110.0
+    cooldown_seconds: 300
+  ems:
+    salary: 110.0
+    cooldown_seconds: 300
+
+shop:
+  title: "&aBoutique"
+  items:
+    bread:
+      name: "&fPain (x8)"
+      material: BREAD
+      amount: 8
+      price: 40.0
+      slot: 11
+    steak:
+      name: "&cSteak (x4)"
+      material: COOKED_BEEF
+      amount: 4
+      price: 65.0
+      slot: 13
+    bandage:
+      name: "&eBandage"
+      material: PAPER
+      amount: 1
+      price: 120.0
+      slot: 15
+
+chat:
+  proximity:
+    enabled: true
+    radius: 25.0
+  me_radius: 25.0
+  do_radius: 25.0
+  ooc_radius: 35.0
+  max_message_length: 200
+  formats:
+    local: "&7[%job%] &f%name%&7: &r%message%"
+    me: "&d* &f%name%&d %message%"
+    do: "&5* &f%message% &7(%name%)"
+    ooc: "&8(( &7%name%&8: &7%message% &8))"
+    tweet: "&b[TWT] &f@%name%&7: &f%message%"
+    emergency: "&c[911] &f%name%&7: &f%message% &8(%world% %x% %y% %z%)"
+
+phone:
+  menu:
+    title: "&eTéléphone"

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <mkdir dir="C:/Users/leo/Downloads/StreetLifeRP/plugins" />
+    <copy file="C:\Users\leo\Desktop\StreetLifeRP\target/StreetLifeRP-1.0.jar" todir="C:/Users/leo/Downloads/StreetLifeRP/plugins" failonerror="false" />
+  </target>
+</project>
