@@ -68,10 +68,8 @@ public final class JobService {
 
         data.setLastWorkAtMillis(now);
         repo.save(data);
-        if (cfg.salary() > 0) {
-            economy.addCash(uuid, cfg.salary(), "job_work:" + type.name());
-        }
-        return WorkResult.paid(cfg.salary());
+        double applied = economy.addCashSigned(uuid, cfg.salary(), "job_work:" + type.name());
+        return WorkResult.paid(applied);
     }
 
     private record JobConfig(double salary, long cooldownSeconds) {}
@@ -94,4 +92,3 @@ public final class JobService {
 
     public static final class WorkResultTooFast implements WorkResult {}
 }
-

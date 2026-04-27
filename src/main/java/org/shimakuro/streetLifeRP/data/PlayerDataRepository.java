@@ -58,6 +58,8 @@ public final class PlayerDataRepository {
         cfg.set("justice.fine.reason", data.fineReason());
         cfg.set("justice.fine.issued_at", data.fineIssuedAtMillis());
 
+        cfg.set("vehicles.owned", data.ownedVehicles());
+
         try {
             cfg.save(file);
         } catch (IOException e) {
@@ -93,6 +95,8 @@ public final class PlayerDataRepository {
         data.setFineIssuer(cfg.getString("justice.fine.issuer"));
         data.setFineReason(cfg.getString("justice.fine.reason"));
         data.setFineIssuedAtMillis(cfg.getLong("justice.fine.issued_at", 0L));
+
+        data.setOwnedVehicles(cfg.getStringList("vehicles.owned"));
 
         return data;
     }

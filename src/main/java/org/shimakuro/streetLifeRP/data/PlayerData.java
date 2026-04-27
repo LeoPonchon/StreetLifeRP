@@ -1,5 +1,7 @@
 package org.shimakuro.streetLifeRP.data;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public final class PlayerData {
@@ -23,6 +25,8 @@ public final class PlayerData {
     private String fineReason;
     private long fineIssuedAtMillis;
 
+    private List<String> ownedVehicles = new ArrayList<>();
+
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
     }
@@ -33,6 +37,11 @@ public final class PlayerData {
 
     public boolean hasCharacter() {
         return firstName != null && !firstName.isBlank() && lastName != null && !lastName.isBlank();
+    }
+
+    public String rpNameOrNull() {
+        if (!hasCharacter()) return null;
+        return firstName + " " + lastName;
     }
 
     public String firstName() {
@@ -141,5 +150,13 @@ public final class PlayerData {
 
     public void setFineIssuedAtMillis(long fineIssuedAtMillis) {
         this.fineIssuedAtMillis = fineIssuedAtMillis;
+    }
+
+    public List<String> ownedVehicles() {
+        return ownedVehicles;
+    }
+
+    public void setOwnedVehicles(List<String> ownedVehicles) {
+        this.ownedVehicles = ownedVehicles != null ? new ArrayList<>(ownedVehicles) : new ArrayList<>();
     }
 }

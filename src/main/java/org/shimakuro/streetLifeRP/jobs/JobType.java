@@ -5,6 +5,7 @@ public enum JobType {
     DELIVERY,
     MECHANIC,
     POLICE,
-    EMS
+    EMS,
+    ADMINPLUS,
+    ADMINMINUS
 }
-

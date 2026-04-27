@@ -27,6 +27,7 @@ import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
 import org.shimakuro.streetLifeRP.items.SpecialItemType;
 import org.shimakuro.streetLifeRP.jobs.JobType;
+import org.shimakuro.streetLifeRP.vehicles.GarageService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.UUID;
 
 public final class PhoneMenuService {
     private static final String APP_NUMBER = "number";
+    private static final String APP_GARAGE = "garage";
     private static final String APP_SMS = "sms";
     private static final String APP_SHOP = "shop";
     private static final String APP_WORK = "work";
@@ -51,6 +53,8 @@ public final class PhoneMenuService {
     private static final String APP_ADMIN_PICK_DELETE_TARGET = "admin_pick_delete_target";
     private static final String APP_ADMIN_PICK_TEAM_TARGET = "admin_pick_team_target";
     private static final String APP_ADMIN_SET_JOB = "admin_set_job";
+    private static final String APP_ADMIN_TOGGLE_CUFF = "admin_toggle_cuff";
+    private static final String APP_ADMIN_PICK_CUFF_TARGET = "admin_pick_cuff_target";
 
     private final JavaPlugin plugin;
     private final ConfigService config;
@@ -66,6 +70,7 @@ public final class PhoneMenuService {
     private final InputService input;
     private final CashItemService cashItems;
     private final SpecialItemService specialItems;
+    private final GarageService garage;
     private final NamespacedKey appKey;
     private final NamespacedKey uuidKey;
     private final NamespacedKey jobKey;
@@ -84,7 +89,8 @@ public final class PhoneMenuService {
             PhoneService phone,
             InputService input,
             CashItemService cashItems,
-            SpecialItemService specialItems
+            SpecialItemService specialItems,
+            GarageService garage
     ) {
         this.plugin = plugin;
         this.config = config;
@@ -100,6 +106,7 @@ public final class PhoneMenuService {
         this.input = input;
         this.cashItems = cashItems;
         this.specialItems = specialItems;
+        this.garage = garage;
         this.appKey = new NamespacedKey(plugin, "phone_app");
         this.uuidKey = new NamespacedKey(plugin, "phone_uuid");
         this.jobKey = new NamespacedKey(plugin, "phone_job");
@@ -114,6 +121,11 @@ public final class PhoneMenuService {
             inv.setItem(0, appItem(Material.BARRIER, ChatColor.RED + "Admin: supprimer perso", List.of(
                     ChatColor.GRAY + "Choisir un joueur"
             ), APP_ADMIN_DELETE_CHAR));
+        }
+        if (player.hasPermission("streetliferp.admin.cuff.toggle")) {
+            inv.setItem(1, appItem(Material.TRIPWIRE_HOOK, ChatColor.AQUA + "Admin: toggle menottes", List.of(
+                    ChatColor.GRAY + "Choisir un joueur"
+            ), APP_ADMIN_TOGGLE_CUFF));
         }
         if (player.hasPermission("streetliferp.admin.job.set")) {
             inv.setItem(2, appItem(Material.WRITABLE_BOOK, ChatColor.AQUA + "Admin: set team", List.of(
@@ -131,6 +143,7 @@ public final class PhoneMenuService {
 
         String num = phone.ensureNumber(player.getUniqueId());
         inv.setItem(4, appItem(Material.PAPER, ChatColor.YELLOW + "Numéro", List.of(ChatColor.GRAY + num), APP_NUMBER));
+        inv.setItem(6, appItem(Material.MINECART, ChatColor.YELLOW + "Garage", List.of(ChatColor.GRAY + "Sortir un véhicule (près d'un garage)"), APP_GARAGE));
         inv.setItem(10, appItem(Material.WRITABLE_BOOK, ChatColor.AQUA + "SMS", List.of(ChatColor.GRAY + "Envoyer un message"), APP_SMS));
         inv.setItem(12, appItem(Material.EMERALD, ChatColor.GREEN + "Boutique", List.of(ChatColor.GRAY + "Ouvrir la boutique"), APP_SHOP));
         inv.setItem(14, appItem(Material.GOLD_INGOT, ChatColor.GOLD + "Job", List.of(ChatColor.GRAY + "Travailler / salaire"), APP_WORK));
@@ -166,7 +179,9 @@ public final class PhoneMenuService {
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.equals(player)) continue;
             if (slot >= inv.getSize()) break;
-            ItemStack it = appItem(Material.PLAYER_HEAD, ChatColor.WHITE + p.getName(), List.of(ChatColor.GRAY + "Cliquer pour écrire"), APP_SMS_TO);
+            String rpName = characters.rpNameOrNull(p.getUniqueId());
+            if (rpName == null) continue;
+            ItemStack it = appItem(Material.PLAYER_HEAD, ChatColor.WHITE + rpName, List.of(ChatColor.GRAY + "Cliquer pour écrire"), APP_SMS_TO);
             ItemMeta meta = it.getItemMeta();
             if (meta != null) {
                 meta.getPersistentDataContainer().set(uuidKey, PersistentDataType.STRING, p.getUniqueId().toString());
@@ -201,6 +216,12 @@ public final class PhoneMenuService {
                 openAdminPickPlayer(player, prefix, APP_ADMIN_PICK_TEAM_TARGET);
                 yield true;
             }
+            case APP_ADMIN_TOGGLE_CUFF -> {
+                if (!player.hasPermission("streetliferp.admin.cuff.toggle")) yield true;
+                player.closeInventory();
+                openAdminPickPlayer(player, prefix, APP_ADMIN_PICK_CUFF_TARGET);
+                yield true;
+            }
             case APP_ADMIN_PICK_DELETE_TARGET -> {
                 if (!player.hasPermission("streetliferp.admin.character.delete")) yield true;
                 String rawUuid = meta.getPersistentDataContainer().get(uuidKey, PersistentDataType.STRING);
@@ -222,6 +243,29 @@ public final class PhoneMenuService {
                 if (deleted) {
                     target.sendMessage(prefix + ChatColor.RED + "Votre personnage a été supprimé par un admin.");
                 }
+                yield true;
+            }
+            case APP_ADMIN_PICK_CUFF_TARGET -> {
+                if (!player.hasPermission("streetliferp.admin.cuff.toggle")) yield true;
+                String rawUuid = meta.getPersistentDataContainer().get(uuidKey, PersistentDataType.STRING);
+                if (rawUuid == null) yield true;
+                UUID targetUuid;
+                try {
+                    targetUuid = UUID.fromString(rawUuid);
+                } catch (IllegalArgumentException e) {
+                    yield true;
+                }
+                Player target = Bukkit.getPlayer(targetUuid);
+                if (target == null) {
+                    player.sendMessage(prefix + ChatColor.RED + "Joueur hors ligne.");
+                    yield true;
+                }
+                boolean next = !justice.isCuffed(targetUuid);
+                String actorRp = characters.rpNameOrNull(player.getUniqueId());
+                justice.setCuffed(target, next, prefix, actorRp != null ? actorRp : player.getUniqueId().toString());
+                String targetRp = characters.rpNameOrNull(targetUuid);
+                player.sendMessage(prefix + ChatColor.GREEN + "Menottes " + (next ? "activées" : "retirées") + " pour " + (targetRp != null ? targetRp : target.getName()) + ".");
+                player.closeInventory();
                 yield true;
             }
             case APP_ADMIN_PICK_TEAM_TARGET -> {
@@ -342,6 +386,20 @@ public final class PhoneMenuService {
                 shop.open(player, shopSection, prefix);
                 yield true;
             }
+            case APP_GARAGE -> {
+                if (!data.hasCharacter()) {
+                    player.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
+                    yield true;
+                }
+                GarageService.Garage g = garage.findGarageNearTerminal(player);
+                if (g == null) {
+                    player.sendMessage(prefix + ChatColor.RED + "Va à un garage pour utiliser cette app.");
+                    yield true;
+                }
+                player.closeInventory();
+                garage.openGarageMenu(player, g, prefix);
+                yield true;
+            }
             case APP_WORK -> {
                 if (!data.hasCharacter()) {
                     player.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
@@ -350,7 +408,9 @@ public final class PhoneMenuService {
                 player.closeInventory();
                 JobService.WorkResult res = jobs.work(player.getUniqueId());
                 if (res instanceof JobService.WorkResultPaid paid) {
-                    player.sendMessage(prefix + ChatColor.GREEN + "Travail effectué: +" + economy.format(paid.amount()));
+                    double amount = paid.amount();
+                    String sign = amount < 0 ? "-" : "+";
+                    player.sendMessage(prefix + ChatColor.GREEN + "Travail effectué: " + sign + economy.format(Math.abs(amount)));
                     yield true;
                 }
                 if (res instanceof JobService.WorkResultCooldown cd) {
@@ -469,7 +529,9 @@ public final class PhoneMenuService {
         int slot = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (slot >= inv.getSize()) break;
-            ItemStack it = appItem(Material.PLAYER_HEAD, ChatColor.WHITE + p.getName(), List.of(ChatColor.GRAY + "Cliquer"), appId);
+            String rpName = characters.rpNameOrNull(p.getUniqueId());
+            if (rpName == null) continue;
+            ItemStack it = appItem(Material.PLAYER_HEAD, ChatColor.WHITE + rpName, List.of(ChatColor.GRAY + "Cliquer"), appId);
             ItemMeta meta = it.getItemMeta();
             if (meta != null) {
                 meta.getPersistentDataContainer().set(uuidKey, PersistentDataType.STRING, p.getUniqueId().toString());
@@ -483,7 +545,8 @@ public final class PhoneMenuService {
 
     private void openAdminPickJob(Player admin, UUID targetUuid) {
         Player target = Bukkit.getPlayer(targetUuid);
-        String title = ChatColor.AQUA + "Team: " + (target != null ? target.getName() : targetUuid.toString());
+        String rpName = characters.rpNameOrNull(targetUuid);
+        String title = ChatColor.AQUA + "Team: " + (rpName != null ? rpName : targetUuid.toString());
         Inventory inv = Bukkit.createInventory(new AdminJobHolder(targetUuid), 27, title);
         int slot = 10;
         for (JobType type : JobType.values()) {

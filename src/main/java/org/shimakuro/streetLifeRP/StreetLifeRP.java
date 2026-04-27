@@ -3,6 +3,8 @@ package org.shimakuro.streetLifeRP;
 import org.shimakuro.streetLifeRP.antiabuse.AntiAbuseService;
 import org.shimakuro.streetLifeRP.characters.CharacterService;
 import org.shimakuro.streetLifeRP.chat.ChatService;
+import org.shimakuro.streetLifeRP.chat.CharacterChatGateListener;
+import org.shimakuro.streetLifeRP.chat.ChatCommandBlockListener;
 import org.shimakuro.streetLifeRP.chat.ProximityChatListener;
 import org.shimakuro.streetLifeRP.core.StreetLifeRPContext;
 import org.shimakuro.streetLifeRP.core.config.ConfigService;
@@ -30,6 +32,9 @@ import org.shimakuro.streetLifeRP.shops.ShopListener;
 import org.shimakuro.streetLifeRP.shops.ShopService;
 import org.shimakuro.streetLifeRP.trade.TradeListener;
 import org.shimakuro.streetLifeRP.trade.TradeService;
+import org.shimakuro.streetLifeRP.vehicles.GarageListener;
+import org.shimakuro.streetLifeRP.vehicles.GarageService;
+import org.shimakuro.streetLifeRP.vehicles.QavShiftRightClickCancelListener;
 import org.shimakuro.streetLifeRP.input.InputListener;
 import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.economy.CashItemListener;
@@ -59,11 +64,12 @@ public final class StreetLifeRP extends JavaPlugin {
         EmsService emsService = new EmsService();
         ChatService chatService = new ChatService(playerDataRepository, jobService, antiAbuseService, auditLogService);
         SpecialItemService itemService = new SpecialItemService(this);
-        PhoneService phoneService = new PhoneService(playerDataRepository, jobService, antiAbuseService, auditLogService);
+        PhoneService phoneService = new PhoneService(playerDataRepository, antiAbuseService, auditLogService);
         InputService inputService = new InputService(this);
         CashItemService cashItemService = new CashItemService(this);
         PhoneItemService phoneItemService = new PhoneItemService(this);
-        TradeService tradeService = new TradeService(this, auditLogService);
+        TradeService tradeService = new TradeService(this, auditLogService, playerDataRepository);
+        GarageService garageService = new GarageService(this, playerDataRepository, antiAbuseService, economyService, auditLogService);
         PhoneMenuService phoneMenuService = new PhoneMenuService(
                 this,
                 configService,
@@ -78,7 +84,8 @@ public final class StreetLifeRP extends JavaPlugin {
                 phoneService,
                 inputService,
                 cashItemService,
-                itemService
+                itemService,
+                garageService
         );
 
         this.context = new StreetLifeRPContext(
@@ -101,7 +108,8 @@ public final class StreetLifeRP extends JavaPlugin {
                 phoneItemService,
                 inputService,
                 cashItemService,
-                tradeService
+                tradeService,
+                garageService
         );
 
         this.moduleManager = new ModuleManager(getLogger());
@@ -199,6 +207,8 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void enable() {
                 getServer().getPluginManager().registerEvents(new ProximityChatListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new CharacterChatGateListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new ChatCommandBlockListener(context), StreetLifeRP.this);
             }
 
             @Override
@@ -286,6 +296,23 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void disable() {
                 context.trade().cancelAll();
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
+                return "Vehicles";
+            }
+
+            @Override
+            public void enable() {
+                getServer().getPluginManager().registerEvents(new GarageListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new QavShiftRightClickCancelListener(context), StreetLifeRP.this);
+            }
+
+            @Override
+            public void disable() {
+                // no-op
             }
         });
         moduleManager.register(new Module() {

@@ -35,6 +35,15 @@ public final class TradeListener implements Listener {
 
         event.setCancelled(true);
 
+        if (!ctx.characters().data(actor.getUniqueId()).hasCharacter()) {
+            actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Crée ton personnage d'abord.");
+            return;
+        }
+        if (!ctx.characters().data(target.getUniqueId()).hasCharacter()) {
+            actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Ce joueur n'a pas de personnage.");
+            return;
+        }
+
         if (actor.getWorld() != target.getWorld() || actor.getLocation().distanceSquared(target.getLocation()) > (4.0 * 4.0)) {
             actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Trop loin.");
             return;
@@ -122,4 +131,3 @@ public final class TradeListener implements Listener {
         ctx.trade().cancel(event.getPlayer(), ctx.config().prefix(), "quit");
     }
 }
-

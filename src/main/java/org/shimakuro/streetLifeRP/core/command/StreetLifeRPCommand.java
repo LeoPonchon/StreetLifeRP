@@ -77,6 +77,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
         sender.sendMessage(ChatColor.GRAY + "/" + label + " police cuff|uncuff|fine ...");
         sender.sendMessage(ChatColor.DARK_GRAY + "RP: /me, /do, /ooc, /twt, /911");
         sender.sendMessage(ChatColor.DARK_GRAY + "Admin: /" + label + " admin character delete <joueur>");
+        sender.sendMessage(ChatColor.DARK_GRAY + "Admin: /" + label + " admin cuff <joueur>");
     }
 
     private boolean handleCharacter(Player player, String label, String[] args) {
@@ -155,8 +156,10 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Transaction refusée (fonds ou anti-abuse).");
             return true;
         }
-        player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Payé " + ctx.economy().format(amount) + " à " + target.getName() + ".");
-        target.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Reçu " + ctx.economy().format(amount) + " de " + player.getName() + ".");
+        String targetRp = ctx.characters().rpNameOrNull(target.getUniqueId());
+        String actorRp = ctx.characters().rpNameOrNull(player.getUniqueId());
+        player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Payé " + ctx.economy().format(amount) + " à " + (targetRp != null ? targetRp : target.getUniqueId()) + ".");
+        target.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Reçu " + ctx.economy().format(amount) + " de " + (actorRp != null ? actorRp : player.getUniqueId()) + ".");
         return true;
     }
 
@@ -203,7 +206,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
 
         String action = args[1].toLowerCase();
         if (action.equals("list")) {
-            player.sendMessage(ctx.config().prefix() + ChatColor.YELLOW + "Métiers: " + ChatColor.WHITE + "UNEMPLOYED, DELIVERY, MECHANIC, POLICE, EMS");
+            player.sendMessage(ctx.config().prefix() + ChatColor.YELLOW + "Métiers: " + ChatColor.WHITE + "UNEMPLOYED, DELIVERY, MECHANIC, POLICE, EMS, ADMINPLUS, ADMINMINUS");
             return true;
         }
         if (action.equals("set")) {
@@ -273,9 +276,15 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             return true;
         }
 
+        String actorRp = ctx.characters().rpNameOrNull(player.getUniqueId());
+        if (actorRp == null) {
+            player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Crée ton personnage d'abord.");
+            return true;
+        }
+
         switch (action) {
-            case "cuff" -> ctx.justice().setCuffed(target, true, ctx.config().prefix(), player.getName());
-            case "uncuff" -> ctx.justice().setCuffed(target, false, ctx.config().prefix(), player.getName());
+            case "cuff" -> ctx.justice().setCuffed(target, true, ctx.config().prefix(), actorRp);
+            case "uncuff" -> ctx.justice().setCuffed(target, false, ctx.config().prefix(), actorRp);
             case "fine" -> {
                 if (args.length < 4) {
                     player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " police fine <joueur> <montant> [raison]");
@@ -287,7 +296,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
                     return true;
                 }
                 String reason = args.length >= 5 ? String.join(" ", java.util.Arrays.copyOfRange(args, 4, args.length)) : "Amende";
-                ctx.justice().issueFine(target.getUniqueId(), player.getName(), amount, reason);
+                ctx.justice().issueFine(target.getUniqueId(), actorRp, amount, reason);
                 player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Amende émise.");
                 target.sendMessage(ctx.config().prefix() + ChatColor.RED + "Vous avez reçu une amende: " + ctx.economy().format(amount) + " (" + reason + ").");
                 target.sendMessage(ChatColor.DARK_GRAY + "Payer: /" + label + " fine pay");
@@ -301,6 +310,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
         if (args.length < 2) {
             player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " admin character delete <joueur>");
             player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin item give <joueur> <item>");
+            player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin cuff <joueur>");
             return true;
         }
         String area = args[1].toLowerCase();
@@ -328,7 +338,8 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             target.sendMessage(ctx.config().prefix() + ChatColor.RED + "Votre personnage a été supprimé par un admin.");
             target.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Recréez-le: /" + label + " character create <prenom> <nom>");
 
-            player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Personnage supprimé pour " + target.getName() + ".");
+            String targetRp = ctx.characters().rpNameOrNull(target.getUniqueId());
+            player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Personnage supprimé pour " + (targetRp != null ? targetRp : target.getUniqueId()) + ".");
             ctx.auditLog().logInfo(player.getName() + " deleted character for " + target.getUniqueId());
             return true;
         }
@@ -354,12 +365,35 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
                 return true;
             }
             target.getInventory().addItem(ctx.items().create(type));
-            player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Item donné: " + type.name() + " -> " + target.getName());
+            String targetRp = ctx.characters().rpNameOrNull(target.getUniqueId());
+            player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Item donné: " + type.name() + " -> " + (targetRp != null ? targetRp : target.getUniqueId()));
+            return true;
+        }
+        if (area.equals("cuff")) {
+            if (!player.hasPermission("streetliferp.admin.cuff.toggle")) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Permission manquante.");
+                return true;
+            }
+            if (args.length < 3) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " admin cuff <joueur>");
+                return true;
+            }
+            Player target = Bukkit.getPlayerExact(args[2]);
+            if (target == null) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Joueur introuvable (doit être en ligne).");
+                return true;
+            }
+            boolean next = !ctx.justice().isCuffed(target.getUniqueId());
+            String actorRp = ctx.characters().rpNameOrNull(player.getUniqueId());
+            ctx.justice().setCuffed(target, next, ctx.config().prefix(), actorRp != null ? actorRp : player.getUniqueId().toString());
+            String targetRp = ctx.characters().rpNameOrNull(target.getUniqueId());
+            player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Menottes " + (next ? "activées" : "retirées") + " pour " + (targetRp != null ? targetRp : target.getName()) + ".");
             return true;
         }
 
         player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " admin character delete <joueur>");
         player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin item give <joueur> <item>");
+        player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin cuff <joueur>");
         return true;
     }
 
@@ -414,10 +448,10 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             return List.of("cuff", "uncuff", "fine");
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("job") && args[1].equalsIgnoreCase("set")) {
-            return List.of("UNEMPLOYED", "DELIVERY", "MECHANIC", "POLICE", "EMS");
+            return List.of("UNEMPLOYED", "DELIVERY", "MECHANIC", "POLICE", "EMS", "ADMINPLUS", "ADMINMINUS");
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
-            return List.of("character", "item");
+            return List.of("character", "item", "cuff");
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("character")) {
             return List.of("delete");
@@ -438,6 +472,13 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             return out;
         }
         if (args.length == 4 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("character") && args[2].equalsIgnoreCase("delete")) {
+            List<String> names = new ArrayList<>();
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                names.add(p.getName());
+            }
+            return names;
+        }
+        if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("cuff")) {
             List<String> names = new ArrayList<>();
             for (Player p : Bukkit.getOnlinePlayers()) {
                 names.add(p.getName());

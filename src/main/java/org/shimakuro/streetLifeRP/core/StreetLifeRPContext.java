@@ -19,6 +19,7 @@ import org.shimakuro.streetLifeRP.phone.PhoneItemService;
 import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.economy.CashItemService;
 import org.shimakuro.streetLifeRP.trade.TradeService;
+import org.shimakuro.streetLifeRP.vehicles.GarageService;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class StreetLifeRPContext {
@@ -42,6 +43,7 @@ public final class StreetLifeRPContext {
     private final InputService input;
     private final CashItemService cashItems;
     private final TradeService trade;
+    private final GarageService garage;
 
     public StreetLifeRPContext(
             JavaPlugin plugin,
@@ -63,7 +65,8 @@ public final class StreetLifeRPContext {
             PhoneItemService phoneItems,
             InputService input,
             CashItemService cashItems,
-            TradeService trade
+            TradeService trade,
+            GarageService garage
     ) {
         this.plugin = plugin;
         this.config = config;
@@ -85,6 +88,7 @@ public final class StreetLifeRPContext {
         this.input = input;
         this.cashItems = cashItems;
         this.trade = trade;
+        this.garage = garage;
     }
 
     public JavaPlugin plugin() {
@@ -167,11 +171,16 @@ public final class StreetLifeRPContext {
         return trade;
     }
 
+    public GarageService garage() {
+        return garage;
+    }
+
     public void reloadAll() {
         config.reload();
         antiAbuse.reloadFromConfig(config.raw().getConfigurationSection("antiabuse.cooldowns_seconds"));
         jobs.reloadFromConfig(config.raw().getConfigurationSection("jobs"));
         justice.reloadFromConfig(config.raw().getConfigurationSection("justice"));
         chat.reloadFromConfig(config.raw().getConfigurationSection("chat"));
+        garage.reloadFromConfig(config.raw().getConfigurationSection("vehicles"));
     }
 }

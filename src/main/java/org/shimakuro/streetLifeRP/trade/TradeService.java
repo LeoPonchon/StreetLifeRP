@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
+import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 
 import java.util.Map;
 import java.util.UUID;
@@ -27,12 +28,14 @@ public final class TradeService {
 
     private final JavaPlugin plugin;
     private final AuditLogService audit;
+    private final PlayerDataRepository playerData;
 
     private final Map<UUID, TradeSession> byPlayer = new ConcurrentHashMap<>();
 
-    public TradeService(JavaPlugin plugin, AuditLogService audit) {
+    public TradeService(JavaPlugin plugin, AuditLogService audit, PlayerDataRepository playerData) {
         this.plugin = plugin;
         this.audit = audit;
+        this.playerData = playerData;
     }
 
     public boolean hasSession(UUID uuid) {
@@ -61,10 +64,17 @@ public final class TradeService {
         a.openInventory(inv);
         b.openInventory(inv);
 
-        a.sendMessage(prefix + ChatColor.YELLOW + "Trade ouvert avec " + b.getName() + ".");
-        b.sendMessage(prefix + ChatColor.YELLOW + "Trade ouvert avec " + a.getName() + ".");
+        String aName = rpName(a);
+        String bName = rpName(b);
+        a.sendMessage(prefix + ChatColor.YELLOW + "Trade ouvert avec " + bName + ".");
+        b.sendMessage(prefix + ChatColor.YELLOW + "Trade ouvert avec " + aName + ".");
         audit.logSensitive("TRADE_OPEN a=" + a.getUniqueId() + " b=" + b.getUniqueId());
         return true;
+    }
+
+    private String rpName(Player player) {
+        String name = playerData.get(player.getUniqueId()).rpNameOrNull();
+        return name != null ? name : player.getUniqueId().toString();
     }
 
     public void cancel(Player player, String prefix, String reason) {

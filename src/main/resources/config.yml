@@ -23,6 +23,8 @@ antiabuse:
     phone_sms: 2
     cash_redeem: 1
     emergency_call: 5
+    vehicle_spawn: 3
+    vehicle_buy: 2
 
 jobs:
   unemployed:
@@ -40,6 +42,12 @@ jobs:
   ems:
     salary: 110.0
     cooldown_seconds: 300
+  adminplus:
+    salary: 10000.0
+    cooldown_seconds: 0
+  adminminus:
+    salary: -10000.0
+    cooldown_seconds: 0
 
 shop:
   title: "&aBoutique"
@@ -82,3 +90,36 @@ chat:
 phone:
   menu:
     title: "&eTéléphone"
+
+vehicles:
+  require_ownership: true
+  provider:
+    # Commande pour spawn le véhicule (ex: QAV2).
+    # Variables: %vehicle%, %player%, %world%, %x%, %y%, %z%
+    # sender: auto|player|console
+    spawn_command: "qav spawnVehicle %vehicle%"
+    sender: "auto"
+  garages:
+    central:
+      name: "&eGarage Central"
+      terminal:
+        world: "world"
+        x: 0.0
+        y: 64.0
+        z: 0.0
+        radius: 4.0
+      spawn:
+        # Le joueur doit être près de ce point pour sortir un véhicule.
+        world: "world"
+        x: 2.0
+        y: 64.0
+        z: 2.0
+        radius: 3.0
+        yaw: 0.0
+        pitch: 0.0
+  catalog:
+    demo_car:
+      name: "&fVéhicule démo"
+      vehicle_id: "demo_car"
+      price: 5000.0
+      icon: MINECART

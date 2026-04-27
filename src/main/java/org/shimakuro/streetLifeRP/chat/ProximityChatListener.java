@@ -17,11 +17,9 @@ public final class ProximityChatListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
-        if (!ctx.chat().proximityEnabled()) return;
 
         event.setCancelled(true);
         String message = event.getMessage();
-        Bukkit.getScheduler().runTask(ctx.plugin(), () -> ctx.chat().sendLocalChat(event.getPlayer(), message));
+        Bukkit.getScheduler().runTask(ctx.plugin(), () -> ctx.chat().sendLocalChat(event.getPlayer(), message, ctx.config().prefix()));
     }
 }
-

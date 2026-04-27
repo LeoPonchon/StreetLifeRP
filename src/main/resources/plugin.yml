@@ -16,6 +16,9 @@ permissions:
   streetliferp.admin.job.set:
     description: Permet de changer son métier (admin)
     default: op
+  streetliferp.admin.cuff.toggle:
+    description: Permet de toggle les menottes d'un joueur (admin)
+    default: op
   streetliferp.police:
     description: Accès aux commandes police
     default: op

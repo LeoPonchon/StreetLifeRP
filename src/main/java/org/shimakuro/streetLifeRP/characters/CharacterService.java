@@ -39,6 +39,10 @@ public final class CharacterService {
         return repo.get(uuid);
     }
 
+    public String rpNameOrNull(UUID uuid) {
+        return repo.get(uuid).rpNameOrNull();
+    }
+
     public boolean delete(UUID uuid) {
         PlayerData data = repo.get(uuid);
         if (!data.hasCharacter()) return false;

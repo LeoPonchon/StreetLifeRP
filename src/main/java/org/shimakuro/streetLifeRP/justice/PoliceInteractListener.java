@@ -53,8 +53,13 @@ public final class PoliceInteractListener implements Listener {
     }
 
     private void openFineMenu(Player actor, Player target) {
+        String rpName = ctx.characters().rpNameOrNull(target.getUniqueId());
+        if (rpName == null) {
+            actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Ce joueur n'a pas de personnage.");
+            return;
+        }
         Inventory inv = ctx.plugin().getServer().createInventory(new FineHolder(target.getUniqueId()), 27,
-                ChatColor.RED + "Amende: " + ChatColor.WHITE + target.getName());
+                ChatColor.RED + "Amende: " + ChatColor.WHITE + rpName);
 
         inv.setItem(11, amountItem(50));
         inv.setItem(12, amountItem(100));
@@ -137,7 +142,12 @@ public final class PoliceInteractListener implements Listener {
     }
 
     private void applyFine(Player actor, Player target, double amount, String reason) {
-        ctx.justice().issueFine(target.getUniqueId(), actor.getName(), amount, reason);
+        String actorRp = ctx.characters().rpNameOrNull(actor.getUniqueId());
+        if (actorRp == null) {
+            actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Crée ton personnage d'abord.");
+            return;
+        }
+        ctx.justice().issueFine(target.getUniqueId(), actorRp, amount, reason);
         actor.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Amende mise.");
         target.sendMessage(ctx.config().prefix() + ChatColor.RED + "Vous avez reçu une amende: " + ctx.economy().format(amount) + " (" + reason + ").");
     }

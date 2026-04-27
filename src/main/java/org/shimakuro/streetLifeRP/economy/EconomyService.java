@@ -94,8 +94,24 @@ public final class EconomyService {
         audit.logSensitive("ADD_CASH uuid=" + uuid + " amount=" + amount + " reason=" + reason);
     }
 
+    /**
+     * Apply a cash delta (positive or negative). Clamps resulting cash to 0 to avoid negative balances.
+     * Returns the effective delta applied after clamping (can be smaller in magnitude).
+     */
+    public synchronized double addCashSigned(UUID uuid, double delta, String reason) {
+        if (delta == 0.0) return 0.0;
+        PlayerData data = repo.get(uuid);
+        double before = data.cash();
+        double after = round2(before + delta);
+        if (after < 0.0) after = 0.0;
+        data.setCash(after);
+        repo.save(data);
+        double applied = round2(after - before);
+        audit.logSensitive("ADD_CASH_SIGNED uuid=" + uuid + " delta=" + delta + " applied=" + applied + " reason=" + reason);
+        return applied;
+    }
+
     private double round2(double v) {
         return Math.round(v * 100.0) / 100.0;
     }
 }
-

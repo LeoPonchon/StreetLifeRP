@@ -37,12 +37,14 @@ public final class ChatService {
         return settings.proximityEnabled();
     }
 
-    public void sendLocalChat(Player sender, String rawMessage) {
+    public void sendLocalChat(Player sender, String rawMessage, String prefix) {
         String message = sanitize(rawMessage);
         if (message.isBlank()) return;
 
         Settings s = settings;
-        broadcastLocal(sender, s.proximityRadiusBlocks(), format(s.formatLocal(), sender, message));
+        String formatted = format(s.formatLocal(), sender, message, prefix);
+        if (formatted == null) return;
+        broadcastLocal(sender, s.proximityRadiusBlocks(), formatted);
     }
 
     public boolean sendMe(Player sender, String rawMessage, String prefix) {
@@ -57,7 +59,9 @@ public final class ChatService {
         }
 
         Settings s = settings;
-        broadcastLocal(sender, s.meRadiusBlocks(), format(s.formatMe(), sender, message));
+        String formatted = format(s.formatMe(), sender, message, prefix);
+        if (formatted == null) return true;
+        broadcastLocal(sender, s.meRadiusBlocks(), formatted);
         return true;
     }
 
@@ -73,7 +77,9 @@ public final class ChatService {
         }
 
         Settings s = settings;
-        broadcastLocal(sender, s.doRadiusBlocks(), format(s.formatDo(), sender, message));
+        String formatted = format(s.formatDo(), sender, message, prefix);
+        if (formatted == null) return true;
+        broadcastLocal(sender, s.doRadiusBlocks(), formatted);
         return true;
     }
 
@@ -89,7 +95,9 @@ public final class ChatService {
         }
 
         Settings s = settings;
-        broadcastLocal(sender, s.oocRadiusBlocks(), format(s.formatOoc(), sender, message));
+        String formatted = format(s.formatOoc(), sender, message, prefix);
+        if (formatted == null) return true;
+        broadcastLocal(sender, s.oocRadiusBlocks(), formatted);
         return true;
     }
 
@@ -105,7 +113,8 @@ public final class ChatService {
         }
 
         Settings s = settings;
-        String formatted = format(s.formatTweet(), sender, message);
+        String formatted = format(s.formatTweet(), sender, message, prefix);
+        if (formatted == null) return true;
         for (Player p : Bukkit.getOnlinePlayers()) {
             p.sendMessage(formatted);
         }
@@ -124,7 +133,8 @@ public final class ChatService {
         }
 
         Settings s = settings;
-        String formatted = format(s.formatEmergency(), sender, message);
+        String formatted = format(s.formatEmergency(), sender, message, prefix);
+        if (formatted == null) return true;
 
         boolean delivered = false;
         for (Player p : Bukkit.getOnlinePlayers()) {
@@ -136,7 +146,9 @@ public final class ChatService {
 
         sender.sendMessage(prefix + (delivered ? ChatColor.GREEN + "Appel 911 envoyé." : ChatColor.YELLOW + "Aucun service en ligne, appel enregistré."));
         Location loc = sender.getLocation();
-        auditLog.logInfo("[911] " + sender.getName() + " (" + rpName(sender) + ") : " + message + " @ " + loc.getWorld().getName()
+        String name = rpName(sender);
+        if (name == null) name = "UNKNOWN";
+        auditLog.logInfo("[911] " + sender.getUniqueId() + " (" + name + ") : " + message + " @ " + loc.getWorld().getName()
                 + " " + loc.getBlockX() + " " + loc.getBlockY() + " " + loc.getBlockZ());
         return true;
     }
@@ -155,15 +167,19 @@ public final class ChatService {
         }
     }
 
-    private String format(String pattern, Player sender, String message) {
+    private String format(String pattern, Player sender, String message, String prefix) {
         PlayerData data = playerData.get(sender.getUniqueId());
         String name = rpName(sender);
+        if (name == null) {
+            sender.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
+            return null;
+        }
         JobType job = jobs.get(sender.getUniqueId());
 
         Location loc = sender.getLocation();
         String out = pattern;
         out = out.replace("%name%", name);
-        out = out.replace("%mcname%", sender.getName());
+        out = out.replace("%mcname%", name);
         out = out.replace("%job%", jobLabel(job));
         out = out.replace("%message%", message);
         out = out.replace("%world%", loc.getWorld() != null ? loc.getWorld().getName() : "world");
@@ -175,11 +191,7 @@ public final class ChatService {
     }
 
     private String rpName(Player sender) {
-        PlayerData data = playerData.get(sender.getUniqueId());
-        if (data.hasCharacter()) {
-            return data.firstName() + " " + data.lastName();
-        }
-        return sender.getName();
+        return playerData.get(sender.getUniqueId()).rpNameOrNull();
     }
 
     private String jobLabel(JobType type) {
@@ -189,6 +201,8 @@ public final class ChatService {
             case MECHANIC -> "Mécano";
             case POLICE -> "Police";
             case EMS -> "EMS";
+            case ADMINPLUS -> "Admin+";
+            case ADMINMINUS -> "Admin-";
         };
     }
 

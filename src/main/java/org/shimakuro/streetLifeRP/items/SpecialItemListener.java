@@ -41,8 +41,17 @@ public final class SpecialItemListener implements Listener {
                     actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Permission manquante.");
                     return;
                 }
+                if (!ctx.characters().data(actor.getUniqueId()).hasCharacter()) {
+                    actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Crée ton personnage d'abord.");
+                    return;
+                }
+                if (!ctx.characters().data(target.getUniqueId()).hasCharacter()) {
+                    actor.sendMessage(ctx.config().prefix() + ChatColor.RED + "Ce joueur n'a pas de personnage.");
+                    return;
+                }
                 boolean next = !ctx.justice().isCuffed(target.getUniqueId());
-                ctx.justice().setCuffed(target, next, ctx.config().prefix(), actor.getName());
+                String actorRp = ctx.characters().rpNameOrNull(actor.getUniqueId());
+                ctx.justice().setCuffed(target, next, ctx.config().prefix(), actorRp != null ? actorRp : actor.getUniqueId().toString());
             }
             case MEDKIT -> {
                 if (ctx.jobs().get(actor.getUniqueId()) != JobType.EMS) {

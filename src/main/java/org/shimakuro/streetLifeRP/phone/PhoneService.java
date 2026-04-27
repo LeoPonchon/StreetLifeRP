@@ -7,20 +7,16 @@ import org.shimakuro.streetLifeRP.antiabuse.AntiAbuseService;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
 import org.shimakuro.streetLifeRP.data.PlayerData;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
-import org.shimakuro.streetLifeRP.jobs.JobService;
-import org.shimakuro.streetLifeRP.jobs.JobType;
 
 import java.util.UUID;
 
 public final class PhoneService {
     private final PlayerDataRepository repo;
-    private final JobService jobs;
     private final AntiAbuseService antiAbuse;
     private final AuditLogService auditLog;
 
-    public PhoneService(PlayerDataRepository repo, JobService jobs, AntiAbuseService antiAbuse, AuditLogService auditLog) {
+    public PhoneService(PlayerDataRepository repo, AntiAbuseService antiAbuse, AuditLogService auditLog) {
         this.repo = repo;
-        this.jobs = jobs;
         this.antiAbuse = antiAbuse;
         this.auditLog = auditLog;
     }
@@ -47,14 +43,25 @@ public final class PhoneService {
             return true;
         }
 
+        PlayerData senderData = repo.get(sender.getUniqueId());
+        if (!senderData.hasCharacter()) {
+            sender.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
+            return true;
+        }
+        PlayerData targetData = repo.get(target.getUniqueId());
+        if (!targetData.hasCharacter()) {
+            sender.sendMessage(prefix + ChatColor.RED + "Ce joueur n'a pas de personnage.");
+            return true;
+        }
+
         String message = sanitize(rawMessage, maxLen);
         if (message.isBlank()) {
             sender.sendMessage(prefix + ChatColor.GRAY + "Usage: /sms <joueur> <message>");
             return true;
         }
 
-        String fromName = rpName(sender);
-        String toName = rpName(target);
+        String fromName = senderData.rpNameOrNull();
+        String toName = targetData.rpNameOrNull();
         String fromNum = ensureNumber(sender.getUniqueId());
         String toNum = ensureNumber(target.getUniqueId());
 
@@ -71,19 +78,6 @@ public final class PhoneService {
 
         auditLog.logSensitive("SMS from=" + sender.getUniqueId() + " to=" + target.getUniqueId() + " len=" + message.length());
         return true;
-    }
-
-    private String rpName(Player player) {
-        PlayerData data = repo.get(player.getUniqueId());
-        if (data.hasCharacter()) {
-            return data.firstName() + " " + data.lastName();
-        }
-
-        JobType job = jobs.get(player.getUniqueId());
-        return switch (job) {
-            case POLICE, EMS -> job.name();
-            default -> player.getName();
-        };
     }
 
     private String sanitize(String raw, int maxLen) {
@@ -103,4 +97,3 @@ public final class PhoneService {
         return "06" + String.format("%08d", n);
     }
 }
-
