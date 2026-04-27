@@ -227,11 +227,6 @@ public final class GarageService {
             player.sendMessage(prefix + ChatColor.RED + "Garage invalide.");
             return true;
         }
-        if (!isNearSpawnPoint(player, garage)) {
-            player.sendMessage(prefix + ChatColor.RED + "Va au point de sortie du garage pour sortir ton véhicule.");
-            return true;
-        }
-
         String key = vehicleKeyRaw.toLowerCase(Locale.ROOT);
         VehicleDef def = s.catalog().get(key);
         if (def == null) {
@@ -360,8 +355,7 @@ public final class GarageService {
             meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', def.displayName()));
             meta.setLore(List.of(
                     ChatColor.GRAY + "Garage: " + ChatColor.WHITE + garage.plainName(),
-                    ChatColor.DARK_GRAY + "Va au point de sortie puis clique",
-                    ChatColor.DARK_GRAY + "pour spawn."
+                    ChatColor.DARK_GRAY + "Clique pour sortir le véhicule."
             ));
             meta.getPersistentDataContainer().set(vehicleKey, PersistentDataType.STRING, def.key());
             meta.getPersistentDataContainer().set(garageKey, PersistentDataType.STRING, garage.id());

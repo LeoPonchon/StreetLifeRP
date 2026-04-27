@@ -14,12 +14,16 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.shimakuro.streetLifeRP.core.StreetLifeRPContext;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Disable QAV2 default interaction when player is sneaking and right-clicks a vehicle entity.
  */
 public final class QavShiftRightClickCancelListener implements Listener {
     private final StreetLifeRPContext ctx;
+    private final Map<UUID, Long> blockedOverviewUntil = new HashMap<>();
 
     public QavShiftRightClickCancelListener(StreetLifeRPContext ctx) {
         this.ctx = ctx;
@@ -59,6 +63,7 @@ public final class QavShiftRightClickCancelListener implements Listener {
 
         if (!isQavVehicleEntity(clicked)) return;
         cancellable.setCancelled(true);
+        blockedOverviewUntil.put(player.getUniqueId(), System.currentTimeMillis() + 1500L);
     }
 
     private boolean isQavVehicleEntity(Entity entity) {
@@ -89,17 +94,28 @@ public final class QavShiftRightClickCancelListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (!(event.getPlayer() instanceof Player player)) return;
-        if (!player.isSneaking()) return;
+        if (!shouldBlockOverview(player)) return;
         String title = event.getView().getTitle();
         if (title == null) return;
-        // QAV overview menus are titled like "<VehicleName>: Overview"
-        if (!title.endsWith(": Overview")) return;
-        Object holder = event.getInventory().getHolder();
-        if (holder == null) return;
-        Package p = holder.getClass().getPackage();
-        String pkg = p != null ? p.getName() : "";
-        if (pkg.startsWith("me.zombie_striker.qav")) {
-            event.setCancelled(true);
+        if (!isOverviewTitle(title)) return;
+
+        event.setCancelled(true);
+        player.closeInventory();
+    }
+
+    private boolean shouldBlockOverview(Player player) {
+        Long until = blockedOverviewUntil.get(player.getUniqueId());
+        if (until != null) {
+            if (System.currentTimeMillis() <= until) return true;
+            blockedOverviewUntil.remove(player.getUniqueId());
         }
+        return player.isSneaking();
+    }
+
+    private boolean isOverviewTitle(String title) {
+        String plain = org.bukkit.ChatColor.stripColor(title);
+        if (plain == null) plain = title;
+        String normalized = plain.trim().toLowerCase(java.util.Locale.ROOT);
+        return normalized.endsWith(": overview") || normalized.equals("overview") || normalized.contains("overview");
     }
 }
