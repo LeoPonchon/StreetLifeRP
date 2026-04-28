@@ -2,7 +2,7 @@ name: StreetLifeRP
 version: '1.0'
 main: org.shimakuro.streetLifeRP.StreetLifeRP
 api-version: '1.21'
-softdepend: [ProtocolLib]
+softdepend: [ProtocolLib, Oraxen, QualityArmory, QualityArmoryVehicles2]
 
 permissions:
   streetliferp.admin.reload:

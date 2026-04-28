@@ -2,6 +2,7 @@ org\shimakuro\streetLifeRP\health\UnconsciousMoveListener.class
 org\shimakuro\streetLifeRP\gui\GuiInventoryMaskListener.class
 org\shimakuro\streetLifeRP\gui\GuiInventoryMaskService$1.class
 org\shimakuro\streetLifeRP\bank\BankService.class
+org\shimakuro\streetLifeRP\resourcepack\ExternalResourcePackSyncService.class
 org\shimakuro\streetLifeRP\bank\BankRobberyService$PendingLoot.class
 org\shimakuro\streetLifeRP\StreetLifeRP$7.class
 org\shimakuro\streetLifeRP\health\UnconsciousService.class
@@ -50,6 +51,7 @@ org\shimakuro\streetLifeRP\trade\TradeService$TradeSession.class
 org\shimakuro\streetLifeRP\jobs\JobService$JobConfig.class
 org\shimakuro\streetLifeRP\StreetLifeRP$11.class
 org\shimakuro\streetLifeRP\shops\ShopService$CommandSenderMode.class
+org\shimakuro\streetLifeRP\resourcepack\OraxenReloadSyncListener.class
 org\shimakuro\streetLifeRP\vehicles\QavShiftRightClickCancelListener.class
 org\shimakuro\streetLifeRP\health\UnconsciousListener.class
 org\shimakuro\streetLifeRP\bank\BankListener.class
@@ -67,6 +69,7 @@ org\shimakuro\streetLifeRP\chat\ChatService$Settings.class
 org\shimakuro\streetLifeRP\justice\JusticeService.class
 org\shimakuro\streetLifeRP\StreetLifeRP$3.class
 org\shimakuro\streetLifeRP\characters\CharacterService.class
+org\shimakuro\streetLifeRP\resourcepack\ExternalResourcePackSyncService$YamlEdit.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuListener.class
 org\shimakuro\streetLifeRP\justice\PoliceInteractListener.class
 org\shimakuro\streetLifeRP\StreetLifeRP$13.class
@@ -82,7 +85,9 @@ org\shimakuro\streetLifeRP\bank\BankRobberyService.class
 org\shimakuro\streetLifeRP\gui\GuiInventoryMaskService$MaskState.class
 org\shimakuro\streetLifeRP\bank\BankService$BankHolder.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$PhoneHolder.class
+org\shimakuro\streetLifeRP\StreetLifeRP$19.class
 org\shimakuro\streetLifeRP\antiabuse\AntiAbuseAction.class
+org\shimakuro\streetLifeRP\resourcepack\ExternalResourcePackSyncService$Source.class
 org\shimakuro\streetLifeRP\core\command\RoleplayCommand.class
 org\shimakuro\streetLifeRP\items\SpecialItemListener$1.class
 org\shimakuro\streetLifeRP\data\PlayerDataRepository.class

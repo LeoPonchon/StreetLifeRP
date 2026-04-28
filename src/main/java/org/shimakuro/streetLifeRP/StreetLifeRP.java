@@ -38,6 +38,8 @@ import org.shimakuro.streetLifeRP.phone.PhoneMenuService;
 import org.shimakuro.streetLifeRP.phone.PhoneItemService;
 import org.shimakuro.streetLifeRP.phone.PhoneItemListener;
 import org.shimakuro.streetLifeRP.phone.PhoneSlotGuardListener;
+import org.shimakuro.streetLifeRP.resourcepack.ExternalResourcePackSyncService;
+import org.shimakuro.streetLifeRP.resourcepack.OraxenReloadSyncListener;
 import org.shimakuro.streetLifeRP.shops.ShopListener;
 import org.shimakuro.streetLifeRP.shops.ShopService;
 import org.shimakuro.streetLifeRP.shops.ArmoryInteractListener;
@@ -86,6 +88,7 @@ public final class StreetLifeRP extends JavaPlugin {
         PhoneItemService phoneItemService = new PhoneItemService(this);
         TradeService tradeService = new TradeService(this, auditLogService, playerDataRepository);
         GarageService garageService = new GarageService(this, playerDataRepository, antiAbuseService, economyService, auditLogService);
+        ExternalResourcePackSyncService resourcePackSyncService = new ExternalResourcePackSyncService(this);
         CraftingService craftingService = new CraftingService(this, jobService);
         JobSalaryService jobSalaryService = new JobSalaryService(this, configService, playerDataRepository, jobService, economyService);
         UnconsciousService unconsciousService = new UnconsciousService(this, playerDataRepository, configService.prefix());
@@ -165,6 +168,23 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void enable() {
                 context.reloadAll();
+            }
+
+            @Override
+            public void disable() {
+                // no-op
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
+                return "ResourcePackSync";
+            }
+
+            @Override
+            public void enable() {
+                getServer().getPluginManager().registerEvents(new OraxenReloadSyncListener(resourcePackSyncService), StreetLifeRP.this);
+                resourcePackSyncService.syncAsync("server-start");
             }
 
             @Override
