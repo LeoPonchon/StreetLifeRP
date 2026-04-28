@@ -709,7 +709,7 @@ public final class PhoneMenuService {
         String rpName = characters.rpNameOrNull(targetUuid);
         String title = ChatColor.AQUA + "Team: " + (rpName != null ? rpName : targetUuid.toString());
         Inventory inv = Bukkit.createInventory(new AdminJobHolder(targetUuid), 27, title);
-        int slot = 10;
+        int slot = 0;
         for (JobType type : JobType.values()) {
             ItemStack it = appItem(Material.NAME_TAG, ChatColor.YELLOW + type.name(), List.of(ChatColor.GRAY + "Cliquer"), APP_ADMIN_SET_JOB);
             ItemMeta meta = it.getItemMeta();
@@ -718,8 +718,8 @@ public final class PhoneMenuService {
                 meta.getPersistentDataContainer().set(jobKey, PersistentDataType.STRING, type.name());
                 it.setItemMeta(meta);
             }
+            if (slot >= inv.getSize() - 1) break;
             inv.setItem(slot++, it);
-            if (slot == 17) break;
         }
         addBackButton(inv);
         admin.openInventory(inv);

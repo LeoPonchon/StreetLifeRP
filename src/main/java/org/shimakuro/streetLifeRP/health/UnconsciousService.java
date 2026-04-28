@@ -16,6 +16,7 @@ public final class UnconsciousService implements Runnable {
     private final JavaPlugin plugin;
     private final PlayerDataRepository repo;
     private final String prefix;
+    private final UnconsciousPoseService pose;
 
     private int taskId = -1;
 
@@ -23,6 +24,7 @@ public final class UnconsciousService implements Runnable {
         this.plugin = plugin;
         this.repo = repo;
         this.prefix = prefix;
+        this.pose = new UnconsciousPoseService();
     }
 
     public void enable() {
@@ -50,6 +52,7 @@ public final class UnconsciousService implements Runnable {
         repo.save(data);
 
         applyState(player);
+        pose.setCrawlPose(player, true);
         player.sendMessage(prefix + ChatColor.RED + "Vous êtes inconscient.");
         player.sendMessage(prefix + ChatColor.DARK_GRAY + "Choix: respawn (bouton téléphone) ou attendre un EMS (911).");
     }
@@ -64,6 +67,8 @@ public final class UnconsciousService implements Runnable {
 
         player.removePotionEffect(PotionEffectType.SLOWNESS);
         player.removePotionEffect(PotionEffectType.JUMP_BOOST);
+        // Don't force the local player's pose server-side (can cause bobbing/collision corrections).
+        pose.setCrawlPose(player, false);
         player.setWalkSpeed(0.2f);
         player.setFlySpeed(0.1f);
         if (player.getHealth() > 0.0) {
@@ -88,6 +93,8 @@ public final class UnconsciousService implements Runnable {
             PlayerData data = repo.get(p.getUniqueId());
             if (!data.unconscious()) continue;
             applyState(p);
+            // Some clients/versions will drop forced pose; refresh it.
+            pose.setCrawlPose(p, true);
         }
     }
 
@@ -98,6 +105,7 @@ public final class UnconsciousService implements Runnable {
 
         PotionEffect slow = new PotionEffect(PotionEffectType.SLOWNESS, 20 * 3, SLOWNESS_AMP, true, false, false);
         player.addPotionEffect(slow);
+        // Pose is handled via ProtocolLib for other viewers (avoids local bobbing).
         player.setWalkSpeed(0.0f);
         player.setFlySpeed(0.0f);
     }
@@ -108,4 +116,3 @@ public final class UnconsciousService implements Runnable {
                 : 20.0;
     }
 }
-
