@@ -155,11 +155,16 @@ public final class ExternalResourcePackSyncService {
     private void disablePluginResourcePackSends(File pluginsDir) {
         updateYaml(new File(pluginsDir, "QualityArmory" + File.separator + "config.yml"), cfg -> {
             cfg.set("sendOnJoin", false);
+            cfg.set("sendTitleOnJoin", false);
             cfg.set("useDefaultResourcepack", false);
             cfg.set("KickPlayerIfDeniedResourcepack", false);
+            cfg.set("Auto-Detect-Resourcepack", false);
+            cfg.set("DefaultResourcepackOverride", false);
+            cfg.set("resourcepackInvincibility", false);
         });
 
         updateYaml(new File(pluginsDir, "QualityArmoryVehicles2" + File.separator + "config.yml"), cfg -> {
+            cfg.set("QAMini.resourcepackurl_override", false);
             cfg.set("QAMini.sendResourcepack", false);
             cfg.set("QAMini.sendResourcepackOnJoin", false);
             cfg.set("QAMini.sendResourcepackTitleOnJoin", false);
@@ -185,4 +190,3 @@ public final class ExternalResourcePackSyncService {
         void apply(YamlConfiguration cfg);
     }
 }
-

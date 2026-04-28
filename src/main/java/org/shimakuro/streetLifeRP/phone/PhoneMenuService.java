@@ -744,7 +744,7 @@ public final class PhoneMenuService {
     private String title() {
         ConfigurationSection section = config.raw().getConfigurationSection("phone");
         String raw = section != null ? section.getString("menu.title") : null;
-        if (raw == null || raw.isBlank()) raw = "&eTéléphone";
+        if (raw == null || raw.isBlank()) raw = "ꐟ";
         return ChatColor.translateAlternateColorCodes('&', raw);
     }
 

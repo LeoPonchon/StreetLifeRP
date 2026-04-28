@@ -184,7 +184,7 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void enable() {
                 getServer().getPluginManager().registerEvents(new OraxenReloadSyncListener(resourcePackSyncService), StreetLifeRP.this);
-                resourcePackSyncService.syncAsync("server-start");
+                resourcePackSyncService.syncNow("server-start");
             }
 
             @Override
