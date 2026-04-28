@@ -13,6 +13,7 @@ org\shimakuro\streetLifeRP\economy\EconomyService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$Zone.class
 org\shimakuro\streetLifeRP\chat\ChatCommandBlockListener.class
 org\shimakuro\streetLifeRP\shops\ShopService$ShopHolder.class
+org\shimakuro\streetLifeRP\phone\PhoneMenuService$SocialHolder.class
 org\shimakuro\streetLifeRP\bank\BankService$BankDef.class
 org\shimakuro\streetLifeRP\shops\ShopService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$GarageHolder.class
@@ -51,7 +52,6 @@ org\shimakuro\streetLifeRP\trade\TradeService$TradeSession.class
 org\shimakuro\streetLifeRP\jobs\JobService$JobConfig.class
 org\shimakuro\streetLifeRP\StreetLifeRP$11.class
 org\shimakuro\streetLifeRP\shops\ShopService$CommandSenderMode.class
-org\shimakuro\streetLifeRP\resourcepack\OraxenReloadSyncListener.class
 org\shimakuro\streetLifeRP\vehicles\QavShiftRightClickCancelListener.class
 org\shimakuro\streetLifeRP\health\UnconsciousListener.class
 org\shimakuro\streetLifeRP\bank\BankListener.class
@@ -76,9 +76,7 @@ org\shimakuro\streetLifeRP\StreetLifeRP$13.class
 org\shimakuro\streetLifeRP\justice\PoliceInteractListener$FineHolder.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$Garage.class
 org\shimakuro\streetLifeRP\StreetLifeRP$16.class
-org\shimakuro\streetLifeRP\phone\PhoneMenuService$AdminPickHolder.class
 org\shimakuro\streetLifeRP\StreetLifeRP$8.class
-org\shimakuro\streetLifeRP\phone\PhoneMenuService$AdminJobHolder.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$SmsHolder.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$DealerHolder.class
 org\shimakuro\streetLifeRP\bank\BankRobberyService.class
@@ -100,6 +98,7 @@ org\shimakuro\streetLifeRP\StreetLifeRP$15.class
 org\shimakuro\streetLifeRP\vehicles\GarageInteractListener.class
 org\shimakuro\streetLifeRP\bank\BankService$PendingRobberyView.class
 org\shimakuro\streetLifeRP\antiabuse\AntiAbuseService.class
+org\shimakuro\streetLifeRP\resourcepack\NexoReloadSyncListener.class
 org\shimakuro\streetLifeRP\shops\ShopListener.class
 org\shimakuro\streetLifeRP\items\SpecialItemType.class
 org\shimakuro\streetLifeRP\StreetLifeRP$2.class

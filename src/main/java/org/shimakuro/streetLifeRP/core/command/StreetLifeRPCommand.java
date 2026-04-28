@@ -78,6 +78,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
         sender.sendMessage(ChatColor.DARK_GRAY + "RP: /me, /do, /ooc, /twt, /911");
         sender.sendMessage(ChatColor.DARK_GRAY + "Admin: /" + label + " admin character delete <joueur>");
         sender.sendMessage(ChatColor.DARK_GRAY + "Admin: /" + label + " admin cuff <joueur>");
+        sender.sendMessage(ChatColor.DARK_GRAY + "Admin: /" + label + " admin job set <joueur> <job>");
     }
 
     private boolean handleCharacter(Player player, String label, String[] args) {
@@ -311,6 +312,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " admin character delete <joueur>");
             player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin item give <joueur> <item>");
             player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin cuff <joueur>");
+            player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin job set <joueur> <job>");
             return true;
         }
         String area = args[1].toLowerCase();
@@ -390,10 +392,38 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Menottes " + (next ? "activées" : "retirées") + " pour " + (targetRp != null ? targetRp : target.getName()) + ".");
             return true;
         }
+        if (area.equals("job")) {
+            if (!player.hasPermission("streetliferp.admin.job.set")) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Permission manquante.");
+                return true;
+            }
+            if (args.length < 5 || !args[2].equalsIgnoreCase("set")) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " admin job set <joueur> <job>");
+                return true;
+            }
+            Player target = Bukkit.getPlayerExact(args[3]);
+            if (target == null) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Joueur introuvable (doit etre en ligne).");
+                return true;
+            }
+            JobType type;
+            try {
+                type = JobType.valueOf(args[4].toUpperCase());
+            } catch (IllegalArgumentException e) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Job invalide.");
+                return true;
+            }
+            ctx.jobs().set(target.getUniqueId(), type);
+            String targetRp = ctx.characters().rpNameOrNull(target.getUniqueId());
+            player.sendMessage(ctx.config().prefix() + ChatColor.GREEN + "Metier mis a jour: " + (targetRp != null ? targetRp : target.getName()) + " -> " + type.name());
+            target.sendMessage(ctx.config().prefix() + ChatColor.YELLOW + "Vous etes maintenant: " + type.name());
+            return true;
+        }
 
         player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "Usage: /" + label + " admin character delete <joueur>");
         player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin item give <joueur> <item>");
         player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin cuff <joueur>");
+        player.sendMessage(ctx.config().prefix() + ChatColor.GRAY + "       /" + label + " admin job set <joueur> <job>");
         return true;
     }
 
@@ -451,13 +481,16 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             return List.of("UNEMPLOYED", "TAXI", "BAR", "GROCERY", "JOURNALIST", "MECHANIC", "POLICE", "BAKER", "DEALER", "STRIP_CLUB", "EMS");
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
-            return List.of("character", "item", "cuff");
+            return List.of("character", "item", "cuff", "job");
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("character")) {
             return List.of("delete");
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("item")) {
             return List.of("give");
+        }
+        if (args.length == 3 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("job")) {
+            return List.of("set");
         }
         if (args.length == 4 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("item") && args[2].equalsIgnoreCase("give")) {
             List<String> names = new ArrayList<>();
@@ -484,6 +517,16 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
                 names.add(p.getName());
             }
             return names;
+        }
+        if (args.length == 4 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("job") && args[2].equalsIgnoreCase("set")) {
+            List<String> names = new ArrayList<>();
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                names.add(p.getName());
+            }
+            return names;
+        }
+        if (args.length == 5 && args[0].equalsIgnoreCase("admin") && args[1].equalsIgnoreCase("job") && args[2].equalsIgnoreCase("set")) {
+            return List.of("UNEMPLOYED", "TAXI", "BAR", "GROCERY", "JOURNALIST", "MECHANIC", "POLICE", "BAKER", "DEALER", "STRIP_CLUB", "EMS");
         }
         return List.of();
     }

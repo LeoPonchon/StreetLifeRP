@@ -3,7 +3,7 @@ version: '1.0'
 main: org.shimakuro.streetLifeRP.StreetLifeRP
 api-version: '1.21'
 softdepend: [ProtocolLib]
-loadbefore: [Oraxen, QualityArmory, QualityArmoryVehicles2]
+loadbefore: [Nexo, QualityArmory, QualityArmoryVehicles, QualityArmoryVehicles2]
 
 permissions:
   streetliferp.admin.reload:

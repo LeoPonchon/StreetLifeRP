@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -19,8 +20,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 public final class ExternalResourcePackSyncService {
     private final JavaPlugin plugin;
@@ -38,13 +37,17 @@ public final class ExternalResourcePackSyncService {
         File pluginsDir = plugin.getDataFolder().getParentFile();
         if (pluginsDir == null) return;
 
-        File oraxenPack = new File(pluginsDir, "Oraxen" + File.separator + "pack");
-        if (!oraxenPack.exists() && !oraxenPack.mkdirs()) {
-            plugin.getLogger().warning("Unable to create Oraxen pack directory: " + oraxenPack.getAbsolutePath());
+        File nexoDir = new File(pluginsDir, "Nexo");
+        File nexoPack = new File(nexoDir, "pack");
+        File externalPacks = new File(nexoPack, "external_packs");
+        if (!externalPacks.exists() && !externalPacks.mkdirs()) {
+            plugin.getLogger().warning("Unable to create Nexo external_packs directory: " + externalPacks.getAbsolutePath());
             return;
         }
 
         disablePluginResourcePackSends(pluginsDir);
+        configureNexo(nexoDir);
+        copyStreetLifeGlyphFromOraxen(pluginsDir, nexoDir);
 
         List<Source> sources = List.of(
                 new Source("qa", new File(pluginsDir, "QualityArmory" + File.separator + "config.yml"), "DefaultResourcepack"),
@@ -59,7 +62,7 @@ public final class ExternalResourcePackSyncService {
 
         for (Source source : sources) {
             try {
-                syncSource(source, cacheDir.toPath(), oraxenPack.toPath());
+                syncSource(source, cacheDir.toPath(), externalPacks.toPath());
             } catch (Exception e) {
                 plugin.getLogger().warning("Failed to sync " + source.id() + " resourcepack (" + reason + "): "
                         + e.getClass().getSimpleName() + ": " + e.getMessage());
@@ -71,7 +74,7 @@ public final class ExternalResourcePackSyncService {
         plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> syncNow(reason));
     }
 
-    private void syncSource(Source source, Path cacheDir, Path oraxenPack) throws Exception {
+    private void syncSource(Source source, Path cacheDir, Path externalPacks) throws Exception {
         if (!source.config().exists()) return;
 
         YamlConfiguration cfg = YamlConfiguration.loadConfiguration(source.config());
@@ -80,8 +83,9 @@ public final class ExternalResourcePackSyncService {
 
         Path zipPath = cacheDir.resolve(source.id() + ".zip");
         download(url, zipPath);
-        int files = extractAssets(zipPath, oraxenPack);
-        plugin.getLogger().info("Synced " + source.id() + " resourcepack into Oraxen pack (" + files + " files).");
+        Path target = externalPacks.resolve("StreetLifeRP-" + source.id() + ".zip");
+        Files.copy(zipPath, target, StandardCopyOption.REPLACE_EXISTING);
+        plugin.getLogger().info("Synced " + source.id() + " resourcepack into Nexo external_packs.");
     }
 
     private String pickResourcePackUrl(ConfigurationSection section) {
@@ -128,30 +132,6 @@ public final class ExternalResourcePackSyncService {
         Files.move(tmp, out, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }
 
-    private int extractAssets(Path zipPath, Path packRoot) throws IOException {
-        int copied = 0;
-        try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(zipPath))) {
-            ZipEntry entry;
-            while ((entry = zip.getNextEntry()) != null) {
-                if (entry.isDirectory()) continue;
-
-                String normalized = entry.getName().replace('\\', '/');
-                int assetsIndex = normalized.indexOf("assets/");
-                if (assetsIndex < 0) continue;
-
-                String relative = normalized.substring(assetsIndex);
-                Path target = packRoot.resolve(relative).normalize();
-                if (!target.startsWith(packRoot.normalize())) continue;
-
-                Path parent = target.getParent();
-                if (parent != null) Files.createDirectories(parent);
-                Files.copy(zip, target, StandardCopyOption.REPLACE_EXISTING);
-                copied++;
-            }
-        }
-        return copied;
-    }
-
     private void disablePluginResourcePackSends(File pluginsDir) {
         updateYaml(new File(pluginsDir, "QualityArmory" + File.separator + "config.yml"), cfg -> {
             cfg.set("sendOnJoin", false);
@@ -170,6 +150,41 @@ public final class ExternalResourcePackSyncService {
             cfg.set("QAMini.sendResourcepackTitleOnJoin", false);
             cfg.set("QAMini.kickIfRejectResourcepack", false);
         });
+    }
+
+    private void configureNexo(File nexoDir) {
+        updateYaml(new File(nexoDir, "settings.yml"), cfg -> {
+            cfg.set("Pack.import.external_packs", true);
+            cfg.set("Misc.block_other_resourcepacks", true);
+        });
+    }
+
+    private void copyStreetLifeGlyphFromOraxen(File pluginsDir, File nexoDir) {
+        File nexoGlyphsDir = new File(nexoDir, "glyphs" + File.separator + "streetliferp");
+        File nexoPackTexturesDir = new File(nexoDir, "pack" + File.separator + "textures" + File.separator + "streetliferp");
+        File oraxenPhoneTexture = new File(pluginsDir, "Oraxen" + File.separator + "pack" + File.separator + "textures"
+                + File.separator + "streetliferp" + File.separator + "phone.png");
+
+        try {
+            if (!nexoGlyphsDir.exists() && !nexoGlyphsDir.mkdirs()) return;
+            File glyphFile = new File(nexoGlyphsDir, "interface.yml");
+            String glyphConfig = """
+                    streetliferp_phone:
+                      texture: streetliferp/phone
+                      ascent: 13
+                      height: 221
+                      char: ꐟ
+                    """;
+            Files.writeString(glyphFile.toPath(), glyphConfig, StandardCharsets.UTF_8);
+
+            if (oraxenPhoneTexture.exists()) {
+                if (!nexoPackTexturesDir.exists() && !nexoPackTexturesDir.mkdirs()) return;
+                Files.copy(oraxenPhoneTexture.toPath(), new File(nexoPackTexturesDir, "phone.png").toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (Exception e) {
+            plugin.getLogger().warning("Failed to copy StreetLifeRP Nexo glyph: "
+                    + e.getClass().getSimpleName() + ": " + e.getMessage());
+        }
     }
 
     private void updateYaml(File file, YamlEdit edit) {

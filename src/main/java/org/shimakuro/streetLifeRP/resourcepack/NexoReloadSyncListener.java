@@ -8,28 +8,28 @@ import org.bukkit.event.server.ServerCommandEvent;
 
 import java.util.Locale;
 
-public final class OraxenReloadSyncListener implements Listener {
+public final class NexoReloadSyncListener implements Listener {
     private final ExternalResourcePackSyncService sync;
 
-    public OraxenReloadSyncListener(ExternalResourcePackSyncService sync) {
+    public NexoReloadSyncListener(ExternalResourcePackSyncService sync) {
         this.sync = sync;
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
-        if (isOraxenReload(event.getMessage())) {
-            sync.syncNow("oraxen-player-command");
+        if (isNexoReload(event.getMessage())) {
+            sync.syncNow("nexo-player-command");
         }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
     public void onServerCommand(ServerCommandEvent event) {
-        if (isOraxenReload(event.getCommand())) {
-            sync.syncNow("oraxen-server-command");
+        if (isNexoReload(event.getCommand())) {
+            sync.syncNow("nexo-server-command");
         }
     }
 
-    private boolean isOraxenReload(String raw) {
+    private boolean isNexoReload(String raw) {
         if (raw == null) return false;
         String command = raw.trim();
         if (command.startsWith("/")) command = command.substring(1).trim();
@@ -42,7 +42,7 @@ public final class OraxenReloadSyncListener implements Listener {
         if (namespaceIndex >= 0 && namespaceIndex + 1 < root.length()) {
             root = root.substring(namespaceIndex + 1);
         }
-        if (!root.equals("oraxen") && !root.equals("o")) return false;
+        if (!root.equals("nexo") && !root.equals("n")) return false;
         return parts[1].equals("reload");
     }
 }

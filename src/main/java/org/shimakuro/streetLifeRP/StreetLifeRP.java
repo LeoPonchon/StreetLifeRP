@@ -39,7 +39,7 @@ import org.shimakuro.streetLifeRP.phone.PhoneItemService;
 import org.shimakuro.streetLifeRP.phone.PhoneItemListener;
 import org.shimakuro.streetLifeRP.phone.PhoneSlotGuardListener;
 import org.shimakuro.streetLifeRP.resourcepack.ExternalResourcePackSyncService;
-import org.shimakuro.streetLifeRP.resourcepack.OraxenReloadSyncListener;
+import org.shimakuro.streetLifeRP.resourcepack.NexoReloadSyncListener;
 import org.shimakuro.streetLifeRP.shops.ShopListener;
 import org.shimakuro.streetLifeRP.shops.ShopService;
 import org.shimakuro.streetLifeRP.shops.ArmoryInteractListener;
@@ -183,7 +183,7 @@ public final class StreetLifeRP extends JavaPlugin {
 
             @Override
             public void enable() {
-                getServer().getPluginManager().registerEvents(new OraxenReloadSyncListener(resourcePackSyncService), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new NexoReloadSyncListener(resourcePackSyncService), StreetLifeRP.this);
                 resourcePackSyncService.syncNow("server-start");
             }
 
