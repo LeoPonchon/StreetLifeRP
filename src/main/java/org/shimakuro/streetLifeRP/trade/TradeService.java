@@ -17,9 +17,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public final class TradeService {
-    public enum Mode { NONE, ONLY_A, ONLY_B, BOTH }
-
-    private static final int SLOT_MODE = 4;
     private static final int SLOT_A_OFFER = 11;
     private static final int SLOT_B_OFFER = 15;
     private static final int SLOT_A_CONFIRM = 21;
@@ -55,7 +52,6 @@ public final class TradeService {
 
         Inventory inv = Bukkit.createInventory(new TradeHolder(), 27, ChatColor.GOLD + "Trade");
         TradeSession session = new TradeSession(a.getUniqueId(), b.getUniqueId(), inv);
-        session.mode = Mode.BOTH;
         updateUi(session);
 
         byPlayer.put(a.getUniqueId(), session);
@@ -102,11 +98,11 @@ public final class TradeService {
         Player b = Bukkit.getPlayer(session.b());
         if (a != null && a.getOpenInventory().getTopInventory().equals(session.inv())) {
             a.closeInventory();
-            if (!prefix.isBlank()) a.sendMessage(prefix + ChatColor.RED + "Trade annulé.");
+            if (!prefix.isBlank() && !"complete".equals(reason)) a.sendMessage(prefix + ChatColor.RED + "Trade annulé.");
         }
         if (b != null && b.getOpenInventory().getTopInventory().equals(session.inv())) {
             b.closeInventory();
-            if (!prefix.isBlank()) b.sendMessage(prefix + ChatColor.RED + "Trade annulé.");
+            if (!prefix.isBlank() && !"complete".equals(reason)) b.sendMessage(prefix + ChatColor.RED + "Trade annulé.");
         }
 
         byPlayer.remove(session.a());
@@ -145,30 +141,9 @@ public final class TradeService {
         }
     }
 
-    public void cycleMode(Player player) {
-        TradeSession session = byPlayer.get(player.getUniqueId());
-        if (session == null) return;
-        if (session.cancelled) return;
-        if (!player.getUniqueId().equals(session.initiator)) return;
-
-        session.mode = switch (session.mode) {
-            case BOTH -> Mode.ONLY_A;
-            case ONLY_A -> Mode.ONLY_B;
-            case ONLY_B -> Mode.NONE;
-            case NONE -> Mode.BOTH;
-        };
-        session.aConfirmed = false;
-        session.bConfirmed = false;
-        stopCountdown(session);
-        updateUi(session);
-    }
-
     public boolean canEditOffer(TradeSession session, UUID who, boolean offerA) {
-        if (session.mode == Mode.NONE) return false;
-        if (session.mode == Mode.BOTH) return true;
-        if (session.mode == Mode.ONLY_A) return offerA && who.equals(session.a());
-        if (session.mode == Mode.ONLY_B) return !offerA && who.equals(session.b());
-        return false;
+        if (session.countdownTaskId != -1) return false;
+        return (offerA && who.equals(session.a())) || (!offerA && who.equals(session.b()));
     }
 
     public void onOfferChanged(TradeSession session) {
@@ -240,21 +215,21 @@ public final class TradeService {
     }
 
     public void updateUi(TradeSession session) {
-        session.inv().setItem(SLOT_MODE, modeItem(session));
+        session.inv().setItem(4, infoItem());
         session.inv().setItem(SLOT_A_CONFIRM, confirmItem("A", session.aConfirmed));
         session.inv().setItem(SLOT_B_CONFIRM, confirmItem("B", session.bConfirmed));
         session.inv().setItem(SLOT_STATUS, statusItem(session));
     }
 
-    private ItemStack modeItem(TradeSession session) {
-        ItemStack it = new ItemStack(Material.COMPARATOR);
+    private ItemStack infoItem() {
+        ItemStack it = new ItemStack(Material.PAPER);
         ItemMeta meta = it.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName(ChatColor.YELLOW + "Mode");
+            meta.setDisplayName(ChatColor.YELLOW + "Trade simple");
             meta.setLore(java.util.List.of(
-                    ChatColor.GRAY + "BOTH / ONLY_A / ONLY_B / NONE",
-                    ChatColor.WHITE + session.mode.name(),
-                    ChatColor.DARK_GRAY + "Clic: changer (initiateur)"
+                    ChatColor.GRAY + "Chaque joueur pose son cash",
+                    ChatColor.GRAY + "puis confirme.",
+                    ChatColor.DARK_GRAY + "3s pour annuler après confirmation"
             ));
             it.setItemMeta(meta);
         }
@@ -293,7 +268,6 @@ public final class TradeService {
 
     public static int offerSlotA() { return SLOT_A_OFFER; }
     public static int offerSlotB() { return SLOT_B_OFFER; }
-    public static int modeSlot() { return SLOT_MODE; }
     public static int confirmSlotA() { return SLOT_A_CONFIRM; }
     public static int confirmSlotB() { return SLOT_B_CONFIRM; }
 
@@ -308,11 +282,9 @@ public final class TradeService {
         private final UUID a;
         private final UUID b;
         private final Inventory inv;
-        private final UUID initiator;
 
         private volatile boolean aConfirmed;
         private volatile boolean bConfirmed;
-        private volatile Mode mode;
         private volatile boolean cancelled;
         private volatile int countdownTaskId = -1;
         private volatile int countdownSeconds;
@@ -321,7 +293,6 @@ public final class TradeService {
             this.a = a;
             this.b = b;
             this.inv = inv;
-            this.initiator = a;
         }
 
         public UUID a() { return a; }

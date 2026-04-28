@@ -59,6 +59,7 @@ public final class PlayerDataRepository {
         cfg.set("justice.fine.issued_at", data.fineIssuedAtMillis());
 
         cfg.set("vehicles.owned", data.ownedVehicles());
+        cfg.set("vehicles.active_uuid", data.activeVehicleUuid());
 
         try {
             cfg.save(file);
@@ -97,6 +98,7 @@ public final class PlayerDataRepository {
         data.setFineIssuedAtMillis(cfg.getLong("justice.fine.issued_at", 0L));
 
         data.setOwnedVehicles(cfg.getStringList("vehicles.owned"));
+        data.setActiveVehicleUuid(cfg.getString("vehicles.active_uuid"));
 
         return data;
     }

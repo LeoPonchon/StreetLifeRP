@@ -26,6 +26,7 @@ public final class ShopService {
     private final EconomyService economy;
     private final NamespacedKey priceKey;
     private final NamespacedKey nameKey;
+    private final NamespacedKey backKey;
 
     public ShopService(JavaPlugin plugin, AntiAbuseService antiAbuse, EconomyService economy) {
         this.plugin = plugin;
@@ -33,6 +34,7 @@ public final class ShopService {
         this.economy = economy;
         this.priceKey = new NamespacedKey(plugin, "shop_price");
         this.nameKey = new NamespacedKey(plugin, "shop_name");
+        this.backKey = new NamespacedKey(plugin, "shop_back");
     }
 
     public void open(Player player, ConfigurationSection shopSection, String prefix) {
@@ -76,8 +78,35 @@ public final class ShopService {
             }
         }
 
+        addBackButton(inv);
         player.openInventory(inv);
         player.sendMessage(prefix + ChatColor.GREEN + "Boutique ouverte.");
+    }
+
+    private void addBackButton(Inventory inv) {
+        int slot = firstEmptyBackSlot(inv);
+        inv.setItem(slot, backItem());
+    }
+
+    private int firstEmptyBackSlot(Inventory inv) {
+        int[] preferred = {26, 18, 8, 17, 0};
+        for (int slot : preferred) {
+            ItemStack item = inv.getItem(slot);
+            if (item == null || item.getType().isAir()) return slot;
+        }
+        return inv.getSize() - 1;
+    }
+
+    private ItemStack backItem() {
+        ItemStack item = new ItemStack(Material.ARROW);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.YELLOW + "Retour");
+            meta.setLore(List.of(ChatColor.GRAY + "Revenir au téléphone"));
+            meta.getPersistentDataContainer().set(backKey, PersistentDataType.BYTE, (byte) 1);
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 
     public boolean tryBuy(Player player, ItemStack clicked, String prefix) {
@@ -113,6 +142,14 @@ public final class ShopService {
         return holder instanceof ShopHolder;
     }
 
+    public boolean isBackButton(ItemStack clicked) {
+        if (clicked == null || clicked.getType().isAir()) return false;
+        ItemMeta meta = clicked.getItemMeta();
+        if (meta == null) return false;
+        Byte value = meta.getPersistentDataContainer().get(backKey, PersistentDataType.BYTE);
+        return value != null && value == (byte) 1;
+    }
+
     private static final class ShopHolder implements InventoryHolder {
         @Override
         public Inventory getInventory() {
@@ -120,4 +157,3 @@ public final class ShopService {
         }
     }
 }
-

@@ -25,7 +25,10 @@ public final class ShopListener implements Listener {
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType().isAir()) return;
 
+        if (ctx.shop().isBackButton(clicked)) {
+            ctx.phoneMenu().open(player, ctx.config().prefix());
+            return;
+        }
         ctx.shop().tryBuy(player, clicked, ctx.config().prefix());
     }
 }
-

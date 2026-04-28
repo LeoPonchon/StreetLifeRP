@@ -55,6 +55,7 @@ public final class PhoneMenuService {
     private static final String APP_ADMIN_SET_JOB = "admin_set_job";
     private static final String APP_ADMIN_TOGGLE_CUFF = "admin_toggle_cuff";
     private static final String APP_ADMIN_PICK_CUFF_TARGET = "admin_pick_cuff_target";
+    private static final String APP_BACK = "back";
 
     private final JavaPlugin plugin;
     private final ConfigService config;
@@ -178,7 +179,7 @@ public final class PhoneMenuService {
         int slot = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
             if (p.equals(player)) continue;
-            if (slot >= inv.getSize()) break;
+            if (slot >= inv.getSize() - 1) break;
             String rpName = characters.rpNameOrNull(p.getUniqueId());
             if (rpName == null) continue;
             ItemStack it = appItem(Material.PLAYER_HEAD, ChatColor.WHITE + rpName, List.of(ChatColor.GRAY + "Cliquer pour écrire"), APP_SMS_TO);
@@ -189,6 +190,7 @@ public final class PhoneMenuService {
             }
             inv.setItem(slot++, it);
         }
+        addBackButton(inv);
         player.openInventory(inv);
     }
 
@@ -204,6 +206,10 @@ public final class PhoneMenuService {
 
         PlayerData data = repo.get(player.getUniqueId());
         return switch (app) {
+            case APP_BACK -> {
+                open(player, prefix);
+                yield true;
+            }
             case APP_ADMIN_DELETE_CHAR -> {
                 if (!player.hasPermission("streetliferp.admin.character.delete")) yield true;
                 player.closeInventory();
@@ -517,6 +523,12 @@ public final class PhoneMenuService {
         return item;
     }
 
+    private void addBackButton(Inventory inv) {
+        inv.setItem(inv.getSize() - 1, appItem(Material.ARROW, ChatColor.YELLOW + "Retour", List.of(
+                ChatColor.GRAY + "Revenir au téléphone"
+        ), APP_BACK));
+    }
+
     private String title() {
         ConfigurationSection section = config.raw().getConfigurationSection("phone");
         String raw = section != null ? section.getString("menu.title") : null;
@@ -528,7 +540,7 @@ public final class PhoneMenuService {
         Inventory inv = Bukkit.createInventory(new AdminPickHolder(appId), 54, ChatColor.DARK_RED + "Admin - Joueurs");
         int slot = 0;
         for (Player p : Bukkit.getOnlinePlayers()) {
-            if (slot >= inv.getSize()) break;
+            if (slot >= inv.getSize() - 1) break;
             String rpName = characters.rpNameOrNull(p.getUniqueId());
             if (rpName == null) continue;
             ItemStack it = appItem(Material.PLAYER_HEAD, ChatColor.WHITE + rpName, List.of(ChatColor.GRAY + "Cliquer"), appId);
@@ -539,6 +551,7 @@ public final class PhoneMenuService {
             }
             inv.setItem(slot++, it);
         }
+        addBackButton(inv);
         player.openInventory(inv);
         player.sendMessage(prefix + ChatColor.GRAY + "Choisis un joueur.");
     }
@@ -560,6 +573,7 @@ public final class PhoneMenuService {
             inv.setItem(slot++, it);
             if (slot == 17) break;
         }
+        addBackButton(inv);
         admin.openInventory(inv);
     }
 

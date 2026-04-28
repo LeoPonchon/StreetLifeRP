@@ -58,27 +58,35 @@ public final class TradeListener implements Listener {
         InventoryHolder holder = top.getHolder();
         if (!(holder instanceof TradeService.TradeHolder)) return;
 
-        event.setCancelled(true);
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         TradeService.TradeSession session = ctx.trade().session(player.getUniqueId());
         if (session == null || session.inv() != top) return;
 
         int raw = event.getRawSlot();
-        if (raw < 0 || raw >= top.getSize()) return;
+        boolean isA = player.getUniqueId().equals(session.a());
 
-        if (raw == TradeService.modeSlot()) {
-            ctx.trade().cycleMode(player);
-            ctx.trade().updateUi(session);
+        if (raw >= top.getSize()) {
+            if (event.isShiftClick()) {
+                event.setCancelled(true);
+                moveShiftClickedCashToOffer(event, player, session, isA);
+            }
             return;
         }
+
+        event.setCancelled(true);
+        if (raw < 0) return;
+
         if (raw == TradeService.confirmSlotA() || raw == TradeService.confirmSlotB()) {
+            if ((isA && raw != TradeService.confirmSlotA()) || (!isA && raw != TradeService.confirmSlotB())) {
+                player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Clique sur ta confirmation.");
+                return;
+            }
             ctx.trade().toggleConfirm(player, ctx.config().prefix());
             ctx.trade().updateUi(session);
             return;
         }
 
-        boolean isA = player.getUniqueId().equals(session.a());
         boolean isOfferA = raw == TradeService.offerSlotA();
         boolean isOfferB = raw == TradeService.offerSlotB();
         if (!(isOfferA || isOfferB)) return;
@@ -114,6 +122,32 @@ public final class TradeListener implements Listener {
 
         top.setItem(raw, cursor == null || cursor.getType().isAir() ? null : cursor.clone());
         event.setCursor(current == null ? null : current.clone());
+        ctx.trade().onOfferChanged(session);
+    }
+
+    private void moveShiftClickedCashToOffer(InventoryClickEvent event, Player player, TradeService.TradeSession session, boolean isA) {
+        ItemStack clicked = event.getCurrentItem();
+        if (clicked == null || clicked.getType().isAir()) return;
+        if (ctx.cashItems().read(clicked) == null) {
+            player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Trade: uniquement des items Cash.");
+            return;
+        }
+
+        int offerSlot = isA ? TradeService.offerSlotA() : TradeService.offerSlotB();
+        boolean offerA = isA;
+        if (!ctx.trade().canEditOffer(session, player.getUniqueId(), offerA)) {
+            player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Offre verrouillée.");
+            return;
+        }
+
+        ItemStack currentOffer = session.inv().getItem(offerSlot);
+        if (currentOffer != null && !currentOffer.getType().isAir()) {
+            player.sendMessage(ctx.config().prefix() + ChatColor.RED + "Retire d'abord ton offre actuelle.");
+            return;
+        }
+
+        session.inv().setItem(offerSlot, clicked.clone());
+        event.setCurrentItem(null);
         ctx.trade().onOfferChanged(session);
     }
 

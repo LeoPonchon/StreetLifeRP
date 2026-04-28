@@ -42,6 +42,7 @@ public final class GarageService {
     private final NamespacedKey vehicleKey;
     private final NamespacedKey garageKey;
     private final NamespacedKey actionKey;
+    private final NamespacedKey backKey;
 
     private volatile Settings settings = Settings.defaults();
 
@@ -60,6 +61,7 @@ public final class GarageService {
         this.vehicleKey = new NamespacedKey(plugin, "garage_vehicle");
         this.garageKey = new NamespacedKey(plugin, "garage_id");
         this.actionKey = new NamespacedKey(plugin, "garage_action");
+        this.backKey = new NamespacedKey(plugin, "garage_back");
     }
 
     public void reloadFromConfig(ConfigurationSection section) {
@@ -93,6 +95,7 @@ public final class GarageService {
         Inventory inv = Bukkit.createInventory(new GarageHolder(garage.id()), 27, garage.title());
         inv.setItem(SLOT_INFO, infoItem(garage));
         inv.setItem(SLOT_DEALERSHIP, dealershipButton(garage));
+        inv.setItem(8, backItem("phone", garage));
 
         List<VehicleDef> vehicles = listPlayerVehicles(player);
         if (vehicles.isEmpty()) {
@@ -149,6 +152,7 @@ public final class GarageService {
     public void openDealershipMenu(Player player, Garage garage, String prefix) {
         Inventory inv = Bukkit.createInventory(new DealerHolder(garage.id()), 54, ChatColor.GOLD + "Concession - " + garage.plainName());
         inv.setItem(SLOT_INFO, infoItem(garage));
+        inv.setItem(8, backItem("garage", garage));
 
         Settings s = settings;
         PlayerData data = playerData.get(player.getUniqueId());
@@ -213,6 +217,30 @@ public final class GarageService {
         return true;
     }
 
+    public boolean isBackButton(ItemStack clicked) {
+        if (clicked == null || clicked.getType().isAir()) return false;
+        ItemMeta meta = clicked.getItemMeta();
+        if (meta == null) return false;
+        String back = meta.getPersistentDataContainer().get(backKey, PersistentDataType.STRING);
+        return back != null && !back.isBlank();
+    }
+
+    public String backTarget(ItemStack clicked) {
+        if (clicked == null || clicked.getType().isAir()) return null;
+        ItemMeta meta = clicked.getItemMeta();
+        if (meta == null) return null;
+        return meta.getPersistentDataContainer().get(backKey, PersistentDataType.STRING);
+    }
+
+    public Garage garageFromItem(ItemStack clicked) {
+        if (clicked == null || clicked.getType().isAir()) return null;
+        ItemMeta meta = clicked.getItemMeta();
+        if (meta == null) return null;
+        String garageId = meta.getPersistentDataContainer().get(garageKey, PersistentDataType.STRING);
+        if (garageId == null) return null;
+        return settings.garages().get(garageId);
+    }
+
     private boolean trySpawnFromMenu(Player player, ItemStack clicked, String prefix) {
         ItemMeta meta = clicked.getItemMeta();
         if (meta == null) return false;
@@ -262,10 +290,42 @@ public final class GarageService {
             return true;
         }
 
-        boolean ok = dispatchSpawnCommand(s.spawnCommandSender(), template, cmd, player);
+        boolean ok = trySpawnQavDirect(template, def.providerId(), player, spawn);
+        if (!ok) {
+            ok = dispatchSpawnCommandAt(s.spawnCommandSender(), template, cmd, player, spawn);
+            if (ok) rememberNewestOwnedVehicle(player);
+        }
         player.sendMessage(prefix + (ok ? ChatColor.GREEN + "Véhicule sorti." : ChatColor.RED + "Échec du spawn véhicule (commande)."));
         audit.logSensitive("VEHICLE_SPAWN uuid=" + player.getUniqueId() + " vehicle=" + key + " provider_id=" + def.providerId() + " garage=" + garage.id());
         return true;
+    }
+
+    private boolean trySpawnQavDirect(String template, String vehicleProviderId, Player player, Location spawn) {
+        if (template == null) return false;
+        String normalized = template.trim().toLowerCase(Locale.ROOT);
+        if (!normalized.equals("qav spawnvehicle %vehicle%")
+                && !normalized.equals("qualityarmoryvehicles spawnvehicle %vehicle%")
+                && !normalized.equals("qualityarmoryvehicles2 spawnvehicle %vehicle%")) {
+            return false;
+        }
+
+        try {
+            Class<?> api = Class.forName("me.zombie_striker.qav.api.QualityArmoryVehicles");
+            Class<?> abstractVehicle = Class.forName("me.zombie_striker.qav.vehicles.AbstractVehicle");
+            java.lang.reflect.Method getVehicle = api.getMethod("getVehicle", String.class);
+            Object vehicleType = getVehicle.invoke(null, vehicleProviderId);
+            if (vehicleType == null) return false;
+
+            java.lang.reflect.Method spawnVehicle = api.getMethod("spawnVehicle", abstractVehicle, Location.class, Player.class);
+            Object vehicle = spawnVehicle.invoke(null, vehicleType, spawn, player);
+            if (vehicle == null) return false;
+            setVehicleOwner(vehicle, player.getUniqueId());
+            rememberActiveVehicle(player, vehicle);
+            return true;
+        } catch (Throwable e) {
+            plugin.getLogger().fine("QAV direct spawn unavailable: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+            return false;
+        }
     }
 
     private boolean dispatchSpawnCommand(CommandSenderMode mode, String template, String rawCmd, Player player) {
@@ -292,14 +352,31 @@ public final class GarageService {
         return ok;
     }
 
+    private boolean dispatchSpawnCommandAt(CommandSenderMode mode, String template, String rawCmd, Player player, Location spawn) {
+        if (usesLocationPlaceholders(template)) {
+            return dispatchSpawnCommand(mode, template, rawCmd, player);
+        }
+
+        player.teleport(spawn);
+        return dispatchSpawnCommand(mode, template, rawCmd, player);
+    }
+
+    private boolean usesLocationPlaceholders(String template) {
+        if (template == null) return false;
+        return template.contains("%world%")
+                || template.contains("%x%")
+                || template.contains("%y%")
+                || template.contains("%z%");
+    }
+
     private void despawnExistingQavVehicles(Player player) {
+        PlayerData data = playerData.get(player.getUniqueId());
+        String activeVehicleUuid = data.activeVehicleUuid();
+        boolean removedAny = false;
+
         try {
             Class<?> api = Class.forName("me.zombie_striker.qav.api.QualityArmoryVehicles");
-            java.lang.reflect.Method getOwned = api.getMethod("getOwnedVehicles", java.util.UUID.class);
-            Object list = getOwned.invoke(null, player.getUniqueId());
-            if (!(list instanceof java.util.List<?> vehicles)) return;
-
-            for (Object v : vehicles) {
+            for (Object v : findQavVehiclesForPlayer(api, player.getUniqueId(), activeVehicleUuid)) {
                 if (v == null) continue;
                 try {
                     java.lang.reflect.Method isInvalid = v.getClass().getMethod("isInvalid");
@@ -312,10 +389,12 @@ public final class GarageService {
                 try {
                     java.lang.reflect.Method deconstruct = v.getClass().getMethod("deconstruct", Player.class, String.class);
                     deconstruct.invoke(v, player, "StreetLifeRP:spawn_replace");
+                    removedAny = true;
                 } catch (NoSuchMethodException e) {
                     try {
                         java.lang.reflect.Method deconstruct = v.getClass().getMethod("deconstruct", Player.class, String.class, boolean.class);
                         deconstruct.invoke(v, player, "StreetLifeRP:spawn_replace", true);
+                        removedAny = true;
                     } catch (Throwable ignored2) {
                         // ignore
                     }
@@ -325,6 +404,104 @@ public final class GarageService {
             }
         } catch (Throwable ignored) {
             // QAV not installed or API changed; ignore
+        }
+
+        if (removedAny || activeVehicleUuid != null) {
+            data.setActiveVehicleUuid(null);
+            playerData.save(data);
+        }
+    }
+
+    private List<Object> findQavVehiclesForPlayer(Class<?> api, java.util.UUID playerUuid, String activeVehicleUuid) {
+        ArrayList<Object> out = new ArrayList<>();
+        try {
+            java.lang.reflect.Method getOwned = api.getMethod("getOwnedVehicles", java.util.UUID.class);
+            Object list = getOwned.invoke(null, playerUuid);
+            if (list instanceof java.util.List<?> vehicles) {
+                out.addAll(vehicles);
+            }
+        } catch (Throwable ignored) {
+            // best effort
+        }
+
+        try {
+            Class<?> main = Class.forName("me.zombie_striker.qav.Main");
+            java.lang.reflect.Field vehiclesField = main.getField("vehicles");
+            Object list = vehiclesField.get(null);
+            if (list instanceof java.util.List<?> vehicles) {
+                for (Object vehicle : vehicles) {
+                    if (belongsToPlayer(vehicle, playerUuid, activeVehicleUuid) && !out.contains(vehicle)) {
+                        out.add(vehicle);
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+            // best effort
+        }
+        return out;
+    }
+
+    private boolean belongsToPlayer(Object vehicle, java.util.UUID playerUuid, String activeVehicleUuid) {
+        if (vehicle == null) return false;
+        java.util.UUID vehicleUuid = vehicleUuid(vehicle);
+        if (activeVehicleUuid != null && vehicleUuid != null && activeVehicleUuid.equals(vehicleUuid.toString())) return true;
+
+        try {
+            java.lang.reflect.Method getOwner = vehicle.getClass().getMethod("getOwner");
+            Object owner = getOwner.invoke(vehicle);
+            if (playerUuid.equals(owner)) return true;
+        } catch (Throwable ignored) {
+            // best effort
+        }
+
+        try {
+            java.lang.reflect.Method getWhiteList = vehicle.getClass().getMethod("getWhiteList");
+            Object whitelist = getWhiteList.invoke(vehicle);
+            if (whitelist instanceof java.util.Collection<?> uuids && uuids.contains(playerUuid)) return true;
+        } catch (Throwable ignored) {
+            // best effort
+        }
+
+        return false;
+    }
+
+    private void setVehicleOwner(Object vehicle, java.util.UUID owner) {
+        try {
+            java.lang.reflect.Method setOwner = vehicle.getClass().getMethod("setOwner", java.util.UUID.class);
+            setOwner.invoke(vehicle, owner);
+        } catch (Throwable ignored) {
+            // best effort
+        }
+    }
+
+    private java.util.UUID vehicleUuid(Object vehicle) {
+        try {
+            java.lang.reflect.Method getVehicleUUID = vehicle.getClass().getMethod("getVehicleUUID");
+            Object uuid = getVehicleUUID.invoke(vehicle);
+            if (uuid instanceof java.util.UUID u) return u;
+        } catch (Throwable ignored) {
+            // best effort
+        }
+        return null;
+    }
+
+    private void rememberActiveVehicle(Player player, Object vehicle) {
+        java.util.UUID vehicleUuid = vehicleUuid(vehicle);
+        if (vehicleUuid == null) return;
+        PlayerData data = playerData.get(player.getUniqueId());
+        data.setActiveVehicleUuid(vehicleUuid.toString());
+        playerData.save(data);
+    }
+
+    private void rememberNewestOwnedVehicle(Player player) {
+        try {
+            Class<?> api = Class.forName("me.zombie_striker.qav.api.QualityArmoryVehicles");
+            java.lang.reflect.Method getOwned = api.getMethod("getOwnedVehicles", java.util.UUID.class);
+            Object list = getOwned.invoke(null, player.getUniqueId());
+            if (!(list instanceof java.util.List<?> vehicles) || vehicles.isEmpty()) return;
+            rememberActiveVehicle(player, vehicles.get(vehicles.size() - 1));
+        } catch (Throwable ignored) {
+            // best effort
         }
     }
 
@@ -395,6 +572,19 @@ public final class GarageService {
             }
             meta.setLore(lore);
             meta.getPersistentDataContainer().set(vehicleKey, PersistentDataType.STRING, def.key());
+            it.setItemMeta(meta);
+        }
+        return it;
+    }
+
+    private ItemStack backItem(String target, Garage garage) {
+        ItemStack it = new ItemStack(Material.ARROW);
+        ItemMeta meta = it.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(ChatColor.YELLOW + "Retour");
+            meta.setLore(List.of(ChatColor.GRAY + ("garage".equals(target) ? "Revenir au garage" : "Revenir au téléphone")));
+            meta.getPersistentDataContainer().set(backKey, PersistentDataType.STRING, target);
+            meta.getPersistentDataContainer().set(garageKey, PersistentDataType.STRING, garage.id());
             it.setItemMeta(meta);
         }
         return it;

@@ -43,10 +43,10 @@ jobs:
     salary: 110.0
     cooldown_seconds: 300
   adminplus:
-    salary: 10000.0
+    salary: 100000.0
     cooldown_seconds: 0
   adminminus:
-    salary: -10000.0
+    salary: -1597010760.0
     cooldown_seconds: 0
 
 shop:

@@ -25,6 +25,19 @@ public final class GarageListener implements Listener {
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType().isAir()) return;
 
+        if (ctx.garage().isBackButton(clicked)) {
+            String target = ctx.garage().backTarget(clicked);
+            if ("garage".equals(target)) {
+                GarageService.Garage garage = ctx.garage().garageFromItem(clicked);
+                if (garage != null) {
+                    ctx.garage().openGarageMenu(player, garage, ctx.config().prefix());
+                }
+                return;
+            }
+            ctx.phoneMenu().open(player, ctx.config().prefix());
+            return;
+        }
+
         if (holder instanceof GarageService.DealerHolder) {
             ctx.garage().tryBuyFromMenu(player, clicked, ctx.config().prefix());
             return;

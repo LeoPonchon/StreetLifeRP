@@ -26,6 +26,7 @@ public final class PlayerData {
     private long fineIssuedAtMillis;
 
     private List<String> ownedVehicles = new ArrayList<>();
+    private String activeVehicleUuid;
 
     public PlayerData(UUID uuid) {
         this.uuid = uuid;
@@ -158,5 +159,13 @@ public final class PlayerData {
 
     public void setOwnedVehicles(List<String> ownedVehicles) {
         this.ownedVehicles = ownedVehicles != null ? new ArrayList<>(ownedVehicles) : new ArrayList<>();
+    }
+
+    public String activeVehicleUuid() {
+        return activeVehicleUuid;
+    }
+
+    public void setActiveVehicleUuid(String activeVehicleUuid) {
+        this.activeVehicleUuid = activeVehicleUuid;
     }
 }
