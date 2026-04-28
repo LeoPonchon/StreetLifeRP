@@ -1,6 +1,9 @@
 package org.shimakuro.streetLifeRP;
 
 import org.shimakuro.streetLifeRP.antiabuse.AntiAbuseService;
+import org.shimakuro.streetLifeRP.bank.BankListener;
+import org.shimakuro.streetLifeRP.bank.BankRobberyService;
+import org.shimakuro.streetLifeRP.bank.BankService;
 import org.shimakuro.streetLifeRP.characters.CharacterService;
 import org.shimakuro.streetLifeRP.chat.ChatService;
 import org.shimakuro.streetLifeRP.chat.CharacterChatGateListener;
@@ -66,7 +69,9 @@ public final class StreetLifeRP extends JavaPlugin {
         CharacterService characterService = new CharacterService(playerDataRepository, identityService, configService.startingCash(), configService.startingBank());
         ShopService shopService = new ShopService(this, antiAbuseService, economyService);
         JobService jobService = new JobService(playerDataRepository);
-        JusticeService justiceService = new JusticeService(this, playerDataRepository, antiAbuseService, economyService, auditLogService);
+        BankRobberyService bankRobberyService = new BankRobberyService(this, configService, playerDataRepository, economyService, jobService, auditLogService);
+        JusticeService justiceService = new JusticeService(this, playerDataRepository, antiAbuseService, economyService, auditLogService,
+                (target, cuffed) -> bankRobberyService.onCuffed(target, cuffed, configService.prefix()));
         ChatService chatService = new ChatService(playerDataRepository, jobService, antiAbuseService, auditLogService);
         SpecialItemService itemService = new SpecialItemService(this);
         PhoneService phoneService = new PhoneService(playerDataRepository, antiAbuseService, auditLogService);
@@ -79,6 +84,7 @@ public final class StreetLifeRP extends JavaPlugin {
         JobSalaryService jobSalaryService = new JobSalaryService(this, configService, playerDataRepository, jobService, economyService);
         UnconsciousService unconsciousService = new UnconsciousService(this, playerDataRepository, configService.prefix());
         EmsService emsService = new EmsService(unconsciousService);
+        BankService bankService = new BankService(this, configService, economyService, inputService, cashItemService, bankRobberyService);
         PhoneMenuService phoneMenuService = new PhoneMenuService(
                 this,
                 configService,
@@ -107,6 +113,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 characterService,
                 identityService,
                 economyService,
+                bankService,
                 shopService,
                 jobService,
                 justiceService,
@@ -189,6 +196,23 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void disable() {
                 jobSalaryService.disable();
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
+                return "Bank";
+            }
+
+            @Override
+            public void enable() {
+                bankRobberyService.enable();
+                getServer().getPluginManager().registerEvents(new BankListener(context), StreetLifeRP.this);
+            }
+
+            @Override
+            public void disable() {
+                bankRobberyService.disable();
             }
         });
         moduleManager.register(new Module() {

@@ -18,12 +18,18 @@ public final class JusticeService {
     private final AntiAbuseService antiAbuse;
     private final EconomyService economy;
     private final AuditLogService audit;
+    private final java.util.function.BiConsumer<Player, Boolean> cuffHook;
 
     public JusticeService(JavaPlugin plugin, PlayerDataRepository repo, AntiAbuseService antiAbuse, EconomyService economy, AuditLogService audit) {
+        this(plugin, repo, antiAbuse, economy, audit, (p, c) -> {});
+    }
+
+    public JusticeService(JavaPlugin plugin, PlayerDataRepository repo, AntiAbuseService antiAbuse, EconomyService economy, AuditLogService audit, java.util.function.BiConsumer<Player, Boolean> cuffHook) {
         this.repo = repo;
         this.antiAbuse = antiAbuse;
         this.economy = economy;
         this.audit = audit;
+        this.cuffHook = cuffHook != null ? cuffHook : (p, c) -> {};
     }
 
     public void reloadFromConfig(ConfigurationSection section) {
@@ -42,6 +48,11 @@ public final class JusticeService {
         data.setCuffed(cuffed);
         repo.save(data);
         applyCuffed(target, cuffed, prefix);
+        try {
+            cuffHook.accept(target, cuffed);
+        } catch (Throwable ignored) {
+            // best effort
+        }
         audit.logSensitive("CUFF actor=" + actorName + " target=" + target.getUniqueId() + " cuffed=" + cuffed);
     }
 
@@ -98,4 +109,3 @@ public final class JusticeService {
         return false;
     }
 }
-

@@ -7,6 +7,7 @@ import org.shimakuro.streetLifeRP.core.config.ConfigService;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
+import org.shimakuro.streetLifeRP.bank.BankService;
 import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
 import org.shimakuro.streetLifeRP.identity.IdentityService;
@@ -32,6 +33,7 @@ public final class StreetLifeRPContext {
     private final CharacterService characters;
     private final IdentityService identity;
     private final EconomyService economy;
+    private final BankService bank;
     private final ShopService shop;
     private final JobService jobs;
     private final JusticeService justice;
@@ -56,6 +58,7 @@ public final class StreetLifeRPContext {
             CharacterService characters,
             IdentityService identity,
             EconomyService economy,
+            BankService bank,
             ShopService shop,
             JobService jobs,
             JusticeService justice,
@@ -79,6 +82,7 @@ public final class StreetLifeRPContext {
         this.characters = characters;
         this.identity = identity;
         this.economy = economy;
+        this.bank = bank;
         this.shop = shop;
         this.jobs = jobs;
         this.justice = justice;
@@ -125,6 +129,10 @@ public final class StreetLifeRPContext {
 
     public EconomyService economy() {
         return economy;
+    }
+
+    public BankService bank() {
+        return bank;
     }
 
     public ShopService shop() {
@@ -189,6 +197,7 @@ public final class StreetLifeRPContext {
         jobs.reloadFromConfig(config.raw().getConfigurationSection("jobs"));
         justice.reloadFromConfig(config.raw().getConfigurationSection("justice"));
         chat.reloadFromConfig(config.raw().getConfigurationSection("chat"));
+        bank.reloadFromConfig(config.raw().getConfigurationSection("banks"));
         garage.reloadFromConfig(config.raw().getConfigurationSection("vehicles"));
     }
 }
