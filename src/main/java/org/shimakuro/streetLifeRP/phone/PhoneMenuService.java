@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.NamespacedKey;
@@ -19,6 +20,7 @@ import org.shimakuro.streetLifeRP.data.PlayerData;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.CashItemService;
 import org.shimakuro.streetLifeRP.identity.IdentityService;
+import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.jobs.JobService;
 import org.shimakuro.streetLifeRP.shops.ShopService;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
@@ -38,7 +40,6 @@ public final class PhoneMenuService {
     private static final String APP_GARAGE = "garage";
     private static final String APP_SMS = "sms";
     private static final String APP_SHOP = "shop";
-    private static final String APP_WORK = "work";
     private static final String APP_WALLET = "wallet";
     private static final String APP_ID_CARD = "id_card";
     private static final String APP_PAY_FINE = "pay_fine";
@@ -56,6 +57,9 @@ public final class PhoneMenuService {
     private static final String APP_ADMIN_TOGGLE_CUFF = "admin_toggle_cuff";
     private static final String APP_ADMIN_PICK_CUFF_TARGET = "admin_pick_cuff_target";
     private static final String APP_BACK = "back";
+    private static final String APP_JOB_BOOK = "job_book";
+    private static final String APP_ARMORY_SHOP = "armory_shop";
+    private static final String APP_RESPAWN = "respawn";
 
     private final JavaPlugin plugin;
     private final ConfigService config;
@@ -72,6 +76,7 @@ public final class PhoneMenuService {
     private final CashItemService cashItems;
     private final SpecialItemService specialItems;
     private final GarageService garage;
+    private final UnconsciousService unconscious;
     private final NamespacedKey appKey;
     private final NamespacedKey uuidKey;
     private final NamespacedKey jobKey;
@@ -91,7 +96,8 @@ public final class PhoneMenuService {
             InputService input,
             CashItemService cashItems,
             SpecialItemService specialItems,
-            GarageService garage
+            GarageService garage,
+            UnconsciousService unconscious
     ) {
         this.plugin = plugin;
         this.config = config;
@@ -108,6 +114,7 @@ public final class PhoneMenuService {
         this.cashItems = cashItems;
         this.specialItems = specialItems;
         this.garage = garage;
+        this.unconscious = unconscious;
         this.appKey = new NamespacedKey(plugin, "phone_app");
         this.uuidKey = new NamespacedKey(plugin, "phone_uuid");
         this.jobKey = new NamespacedKey(plugin, "phone_job");
@@ -144,14 +151,35 @@ public final class PhoneMenuService {
 
         String num = phone.ensureNumber(player.getUniqueId());
         inv.setItem(4, appItem(Material.PAPER, ChatColor.YELLOW + "Numéro", List.of(ChatColor.GRAY + num), APP_NUMBER));
-        inv.setItem(6, appItem(Material.MINECART, ChatColor.YELLOW + "Garage", List.of(ChatColor.GRAY + "Sortir un véhicule (près d'un garage)"), APP_GARAGE));
+        GarageService.Garage g = garage.findGarageNearTerminal(player);
+        if (g != null) {
+            inv.setItem(6, appItem(Material.MINECART, ChatColor.YELLOW + "Garage", List.of(ChatColor.GRAY + "Sortir un véhicule (près d'un garage)"), APP_GARAGE));
+        } else if (isNearArmory(player)) {
+            inv.setItem(6, appItem(Material.CROSSBOW, ChatColor.DARK_GRAY + "Armurerie", List.of(
+                    ChatColor.GRAY + "Acheter des armes",
+                    ChatColor.DARK_GRAY + "Uniquement en armurerie"
+            ), APP_ARMORY_SHOP));
+        } else {
+            inv.setItem(6, infoItem(Material.PAPER, ChatColor.DARK_GRAY + "Accès limité", List.of(
+                    ChatColor.GRAY + "Garage: va dans un garage",
+                    ChatColor.GRAY + "Armes: va dans une armurerie"
+            )));
+        }
         inv.setItem(10, appItem(Material.WRITABLE_BOOK, ChatColor.AQUA + "SMS", List.of(ChatColor.GRAY + "Envoyer un message"), APP_SMS));
         inv.setItem(12, appItem(Material.EMERALD, ChatColor.GREEN + "Boutique", List.of(ChatColor.GRAY + "Ouvrir la boutique"), APP_SHOP));
-        inv.setItem(14, appItem(Material.GOLD_INGOT, ChatColor.GOLD + "Job", List.of(ChatColor.GRAY + "Travailler / salaire"), APP_WORK));
         inv.setItem(16, appItem(Material.LEATHER, ChatColor.GOLD + "Portefeuille", List.of(ChatColor.GRAY + "Voir cash + banque"), APP_WALLET));
         inv.setItem(20, appItem(Material.PAPER, ChatColor.GOLD + "Retirer cash", List.of(ChatColor.GRAY + "Créer un billet (item)"), APP_WITHDRAW_CASH));
         inv.setItem(22, appItem(Material.NAME_TAG, ChatColor.AQUA + "Identité", List.of(ChatColor.GRAY + "Donner une carte d'identité"), APP_ID_CARD));
         inv.setItem(24, appItem(Material.REDSTONE, ChatColor.RED + "911", List.of(ChatColor.GRAY + "Appel d'urgence"), APP_CALL_911));
+
+        inv.setItem(17, jobBookMenuItem());
+
+        if (data.unconscious()) {
+            inv.setItem(25, appItem(Material.RED_BED, ChatColor.RED + "Respawn", List.of(
+                    ChatColor.GRAY + "Retourner au spawn",
+                    ChatColor.DARK_GRAY + "Quitter l'état inconscient"
+            ), APP_RESPAWN));
+        }
 
         if (data.hasFine()) {
             inv.setItem(26, appItem(Material.SUNFLOWER, ChatColor.RED + "Payer l'amende", List.of(ChatColor.GRAY + "Débite banque puis cash"), APP_PAY_FINE));
@@ -406,26 +434,6 @@ public final class PhoneMenuService {
                 garage.openGarageMenu(player, g, prefix);
                 yield true;
             }
-            case APP_WORK -> {
-                if (!data.hasCharacter()) {
-                    player.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
-                    yield true;
-                }
-                player.closeInventory();
-                JobService.WorkResult res = jobs.work(player.getUniqueId());
-                if (res instanceof JobService.WorkResultPaid paid) {
-                    double amount = paid.amount();
-                    String sign = amount < 0 ? "-" : "+";
-                    player.sendMessage(prefix + ChatColor.GREEN + "Travail effectué: " + sign + economy.format(Math.abs(amount)));
-                    yield true;
-                }
-                if (res instanceof JobService.WorkResultCooldown cd) {
-                    player.sendMessage(prefix + ChatColor.RED + "Cooldown: " + cd.secondsRemaining() + "s.");
-                    yield true;
-                }
-                player.sendMessage(prefix + ChatColor.RED + "Action trop rapide.");
-                yield true;
-            }
             case APP_WALLET -> {
                 if (!data.hasCharacter()) {
                     player.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
@@ -494,6 +502,13 @@ public final class PhoneMenuService {
                 input.request(player, prefix + ChatColor.RED + "Message 911 ? (écris dans le chat)", (p, msg) -> chat.sendEmergencyCall(p, msg, prefix));
                 yield true;
             }
+            case APP_RESPAWN -> {
+                if (!data.hasCharacter()) yield true;
+                if (!data.unconscious()) yield true;
+                player.closeInventory();
+                plugin.getServer().getScheduler().runTask(plugin, () -> unconscious.respawnNow(player));
+                yield true;
+            }
             case APP_POLICE_KIT -> {
                 if (jobs.get(player.getUniqueId()) != JobType.POLICE) yield true;
                 player.getInventory().addItem(specialItems.create(SpecialItemType.HANDCUFFS));
@@ -507,7 +522,140 @@ public final class PhoneMenuService {
                 player.sendMessage(prefix + ChatColor.GREEN + "Kit EMS donné.");
                 yield true;
             }
+            case APP_JOB_BOOK -> {
+                if (!data.hasCharacter()) yield true;
+                player.closeInventory();
+                plugin.getServer().getScheduler().runTask(plugin, () -> player.openBook(createJobInfoBook(player)));
+                yield true;
+            }
+            case APP_ARMORY_SHOP -> {
+                if (!data.hasCharacter()) yield true;
+                if (!isNearArmory(player)) {
+                    player.sendMessage(prefix + ChatColor.RED + "Va dans une armurerie pour utiliser cette app.");
+                    yield true;
+                }
+                ConfigurationSection armorySection = config.raw().getConfigurationSection("armory_shop");
+                if (armorySection == null) {
+                    player.sendMessage(prefix + ChatColor.RED + "Armurerie non configurée.");
+                    yield true;
+                }
+                player.closeInventory();
+                shop.open(player, armorySection, prefix);
+                yield true;
+            }
             default -> false;
+        };
+    }
+
+    private ItemStack infoItem(Material material, String name, List<String> lore) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(name);
+            meta.setLore(new ArrayList<>(lore));
+            item.setItemMeta(meta);
+        }
+        return item;
+    }
+
+    private boolean isNearArmory(Player player) {
+        ConfigurationSection section = config.raw().getConfigurationSection("armories");
+        if (section == null) return false;
+        ConfigurationSection all = section.getConfigurationSection("list");
+        if (all == null) return false;
+
+        org.bukkit.Location loc = player.getLocation();
+        String world = (loc.getWorld() != null) ? loc.getWorld().getName() : "world";
+
+        for (String key : all.getKeys(false)) {
+            ConfigurationSection a = all.getConfigurationSection(key);
+            if (a == null) continue;
+            ConfigurationSection t = a.getConfigurationSection("terminal");
+            if (t == null) continue;
+            String w = t.getString("world", "world");
+            if (!world.equalsIgnoreCase(w)) continue;
+            double x = t.getDouble("x", 0.0);
+            double y = t.getDouble("y", 64.0);
+            double z = t.getDouble("z", 0.0);
+            double radius = t.getDouble("radius", 4.0);
+            double dx = Math.abs(loc.getX() - x);
+            double dy = Math.abs(loc.getY() - y);
+            double dz = Math.abs(loc.getZ() - z);
+            // Square radius (axis-aligned box) instead of circle.
+            if (dx <= radius && dz <= radius && dy <= radius) return true;
+        }
+        return false;
+    }
+
+    private ItemStack jobBookMenuItem() {
+        String name = config.raw().getString("phone.job_book.item_name", "&bInfos métier");
+        List<String> lore = config.raw().getStringList("phone.job_book.item_lore");
+        if (lore == null || lore.isEmpty()) lore = List.of("&7Clique pour ouvrir");
+
+        List<String> translatedLore = new ArrayList<>(lore.size());
+        for (String line : lore) {
+            translatedLore.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+
+        return appItem(
+                Material.WRITTEN_BOOK,
+                ChatColor.translateAlternateColorCodes('&', name),
+                translatedLore,
+                APP_JOB_BOOK
+        );
+    }
+
+    private ItemStack createJobInfoBook(Player player) {
+        JobType job = jobs.get(player.getUniqueId());
+
+        String author = config.raw().getString("phone.job_book.author", "StreetLifeRP");
+        String title = config.raw().getString("phone.job_book.title", "Infos métier");
+
+        double salary = jobs.salary(job);
+        long cooldownSeconds = jobs.cooldownSeconds(job);
+        String currency = config.currencySymbol();
+
+        List<String> pages = new ArrayList<>();
+        pages.add(ChatColor.DARK_BLUE + "" + ChatColor.BOLD + "Métier\n\n"
+                + ChatColor.DARK_GRAY + "Job: " + ChatColor.GRAY + jobDisplayName(job) + "\n"
+                + ChatColor.DARK_GRAY + "Salaire: " + ChatColor.GRAY + salary + currency + "\n"
+                + ChatColor.DARK_GRAY + "Cooldown: " + ChatColor.GRAY + cooldownSeconds + "s\n\n"
+                + ChatColor.DARK_GRAY + "Clique sur " + ChatColor.GRAY + "Job"
+                + ChatColor.DARK_GRAY + " dans le téléphone pour travailler.");
+
+        String jobKey = job.name().toLowerCase();
+        List<String> extraPages = config.raw().getStringList("phone.job_book.jobs." + jobKey + ".pages");
+        if (extraPages != null) {
+            for (String raw : extraPages) {
+                if (raw == null || raw.isBlank()) continue;
+                pages.add(ChatColor.translateAlternateColorCodes('&', raw));
+            }
+        }
+
+        ItemStack book = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta meta = (BookMeta) book.getItemMeta();
+        if (meta != null) {
+            meta.setAuthor(ChatColor.translateAlternateColorCodes('&', author));
+            meta.setTitle(ChatColor.translateAlternateColorCodes('&', title));
+            meta.setPages(pages);
+            book.setItemMeta(meta);
+        }
+        return book;
+    }
+
+    private String jobDisplayName(JobType job) {
+        return switch (job) {
+            case UNEMPLOYED -> "Sans emploi";
+            case DELIVERY -> "Livreur";
+            case BAKER -> "Boulanger";
+            case RESTAURATEUR -> "Restauration";
+            case MECHANIC -> "Mécanicien";
+            case DEALER -> "Dealer";
+            case STRIP_CLUB -> "Strip club";
+            case POLICE -> "Police";
+            case EMS -> "EMS";
+            case ADMINPLUS -> "Admin+";
+            case ADMINMINUS -> "Admin-";
         };
     }
 

@@ -125,7 +125,7 @@ public final class CraftingService implements Listener {
         register(syntheticDrugRecipe(), JobType.DEALER);
         register(spaceCookieRecipe(), JobType.DEALER);
         register(repairKitRecipe(), JobType.MECHANIC);
-        register(ammoBoxRecipe(), JobType.GUNSMITH);
+        register(ammoBoxRecipe(), JobType.POLICE);
     }
 
     private void register(Recipe recipe, JobType job) {

@@ -320,6 +320,7 @@ public final class GarageService {
             Object vehicle = spawnVehicle.invoke(null, vehicleType, spawn, player);
             if (vehicle == null) return false;
             setVehicleOwner(vehicle, player.getUniqueId());
+            fillFuel(vehicle);
             rememberActiveVehicle(player, vehicle);
             return true;
         } catch (Throwable e) {
@@ -499,7 +500,21 @@ public final class GarageService {
             java.lang.reflect.Method getOwned = api.getMethod("getOwnedVehicles", java.util.UUID.class);
             Object list = getOwned.invoke(null, player.getUniqueId());
             if (!(list instanceof java.util.List<?> vehicles) || vehicles.isEmpty()) return;
-            rememberActiveVehicle(player, vehicles.get(vehicles.size() - 1));
+            Object vehicle = vehicles.get(vehicles.size() - 1);
+            fillFuel(vehicle);
+            rememberActiveVehicle(player, vehicle);
+        } catch (Throwable ignored) {
+            // best effort
+        }
+    }
+
+    private void fillFuel(Object vehicleEntity) {
+        if (vehicleEntity == null) return;
+        int max = settings.fuelMax();
+        if (max <= 0) return;
+        try {
+            java.lang.reflect.Method setFuel = vehicleEntity.getClass().getMethod("setFuel", int.class);
+            setFuel.invoke(vehicleEntity, max);
         } catch (Throwable ignored) {
             // best effort
         }
@@ -712,6 +727,7 @@ public final class GarageService {
             boolean requireOwnership,
             String spawnCommandTemplate,
             CommandSenderMode spawnCommandSender,
+            int fuelMax,
             List<String> defaultOwned,
             Map<String, Garage> garages,
             Map<String, VehicleDef> catalog
@@ -721,6 +737,7 @@ public final class GarageService {
                     true,
                     "qav spawnVehicle %vehicle%",
                     CommandSenderMode.AUTO,
+                    10000,
                     List.of(),
                     Map.of(),
                     Map.of()
@@ -734,6 +751,7 @@ public final class GarageService {
             boolean requireOwnership = section.getBoolean("require_ownership", d.requireOwnership());
             String spawnCommand = section.getString("provider.spawn_command", d.spawnCommandTemplate());
             CommandSenderMode sender = parseSenderMode(section.getString("provider.sender", "auto"));
+            int fuelMax = section.getInt("fuel.max", d.fuelMax());
             List<String> defaultOwned = normalizeList(section.getStringList("default_owned"));
 
             Map<String, Garage> garages = new HashMap<>();
@@ -770,7 +788,7 @@ public final class GarageService {
                 }
             }
 
-            return new Settings(requireOwnership, spawnCommand, sender, defaultOwned, Map.copyOf(garages), Map.copyOf(catalog));
+            return new Settings(requireOwnership, spawnCommand, sender, fuelMax, defaultOwned, Map.copyOf(garages), Map.copyOf(catalog));
         }
 
         private static CommandSenderMode parseSenderMode(String raw) {

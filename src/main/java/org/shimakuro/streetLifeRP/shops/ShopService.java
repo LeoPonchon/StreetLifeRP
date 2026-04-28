@@ -18,6 +18,7 @@ import org.shimakuro.streetLifeRP.economy.EconomyService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 public final class ShopService {
@@ -27,6 +28,14 @@ public final class ShopService {
     private final NamespacedKey priceKey;
     private final NamespacedKey nameKey;
     private final NamespacedKey backKey;
+    private final NamespacedKey cmdKey;
+    private final NamespacedKey cmdSenderKey;
+
+    private enum CommandSenderMode {
+        AUTO,
+        PLAYER,
+        CONSOLE
+    }
 
     public ShopService(JavaPlugin plugin, AntiAbuseService antiAbuse, EconomyService economy) {
         this.plugin = plugin;
@@ -35,6 +44,8 @@ public final class ShopService {
         this.priceKey = new NamespacedKey(plugin, "shop_price");
         this.nameKey = new NamespacedKey(plugin, "shop_name");
         this.backKey = new NamespacedKey(plugin, "shop_back");
+        this.cmdKey = new NamespacedKey(plugin, "shop_cmd");
+        this.cmdSenderKey = new NamespacedKey(plugin, "shop_cmd_sender");
     }
 
     public void open(Player player, ConfigurationSection shopSection, String prefix) {
@@ -52,24 +63,50 @@ public final class ShopService {
                 int amount = it.getInt("amount", 1);
                 double price = it.getDouble("price", 0.0);
                 String displayName = it.getString("name", key);
+                String giveCommand = it.getString("give_command");
+                String commandSender = it.getString("command_sender", "auto");
+                String qaItem = it.getString("qa_item");
 
-                Material mat;
-                try {
-                    mat = Material.valueOf(materialName.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    continue;
+                ItemStack item = null;
+                if (qaItem != null && !qaItem.isBlank()) {
+                    item = tryCreateQualityArmoryItem(qaItem.trim());
+                    if (item != null) {
+                        item.setAmount(Math.max(1, amount));
+                        if (giveCommand == null || giveCommand.isBlank()) {
+                            giveCommand = "qa give " + qaItem.trim() + " %player%";
+                            commandSender = "console";
+                        }
+                    }
+                }
+                if (item == null) {
+                    Material mat;
+                    try {
+                        mat = Material.valueOf(materialName.toUpperCase());
+                    } catch (IllegalArgumentException e) {
+                        continue;
+                    }
+                    item = new ItemStack(mat, Math.max(1, amount));
                 }
 
-                ItemStack item = new ItemStack(mat, Math.max(1, amount));
                 ItemMeta meta = item.getItemMeta();
                 if (meta != null) {
-                    meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+                    if (qaItem == null || qaItem.isBlank()) {
+                        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', displayName));
+                    }
                     List<String> lore = new ArrayList<>();
+                    if (meta.getLore() != null && !meta.getLore().isEmpty()) {
+                        lore.addAll(meta.getLore());
+                        lore.add(" ");
+                    }
                     lore.add(ChatColor.GRAY + "Prix: " + ChatColor.GOLD + economy.format(price));
                     lore.add(ChatColor.DARK_GRAY + "Clique pour acheter");
                     meta.setLore(lore);
                     meta.getPersistentDataContainer().set(priceKey, PersistentDataType.DOUBLE, price);
                     meta.getPersistentDataContainer().set(nameKey, PersistentDataType.STRING, key);
+                    if (giveCommand != null && !giveCommand.isBlank()) {
+                        meta.getPersistentDataContainer().set(cmdKey, PersistentDataType.STRING, giveCommand);
+                        meta.getPersistentDataContainer().set(cmdSenderKey, PersistentDataType.STRING, commandSender);
+                    }
                     item.setItemMeta(meta);
                 }
                 if (slot >= 0 && slot < inv.getSize()) {
@@ -114,6 +151,8 @@ public final class ShopService {
         if (meta == null) return false;
         Double price = meta.getPersistentDataContainer().get(priceKey, PersistentDataType.DOUBLE);
         String key = meta.getPersistentDataContainer().get(nameKey, PersistentDataType.STRING);
+        String cmdTemplate = meta.getPersistentDataContainer().get(cmdKey, PersistentDataType.STRING);
+        String cmdSenderRaw = meta.getPersistentDataContainer().get(cmdSenderKey, PersistentDataType.STRING);
         if (price == null || key == null) return false;
 
         if (!antiAbuse.allowAndMark(player.getUniqueId(), AntiAbuseAction.SHOP_BUY)) {
@@ -126,16 +165,85 @@ public final class ShopService {
             return true;
         }
 
+        if (cmdTemplate != null && !cmdTemplate.isBlank()) {
+            CommandSenderMode mode = parseSenderMode(cmdSenderRaw);
+            String rendered = renderCommand(cmdTemplate, player);
+            boolean ok = dispatch(mode, cmdTemplate, rendered, player);
+            if (!ok) {
+                economy.addCash(player.getUniqueId(), price, "shop_refund:" + key);
+                player.sendMessage(prefix + ChatColor.RED + "Achat annulé (commande échouée).");
+                return true;
+            }
+            player.sendMessage(prefix + ChatColor.GREEN + "Achat effectué.");
+            return true;
+        }
+
         ItemStack bought = clicked.clone();
         ItemMeta boughtMeta = bought.getItemMeta();
         if (boughtMeta != null) {
             boughtMeta.getPersistentDataContainer().remove(priceKey);
             boughtMeta.getPersistentDataContainer().remove(nameKey);
+            boughtMeta.getPersistentDataContainer().remove(cmdKey);
+            boughtMeta.getPersistentDataContainer().remove(cmdSenderKey);
             bought.setItemMeta(boughtMeta);
         }
         player.getInventory().addItem(bought);
         player.sendMessage(prefix + ChatColor.GREEN + "Achat effectué.");
         return true;
+    }
+
+    private CommandSenderMode parseSenderMode(String raw) {
+        if (raw == null || raw.isBlank()) return CommandSenderMode.AUTO;
+        String v = raw.trim().toLowerCase(Locale.ROOT);
+        return switch (v) {
+            case "player" -> CommandSenderMode.PLAYER;
+            case "console" -> CommandSenderMode.CONSOLE;
+            default -> CommandSenderMode.AUTO;
+        };
+    }
+
+    private String renderCommand(String template, Player player) {
+        if (template == null) return "";
+        return template.replace("%player%", player.getName()).trim();
+    }
+
+    private boolean dispatch(CommandSenderMode mode, String template, String rawCmd, Player player) {
+        if (rawCmd == null) return false;
+        String cmd = rawCmd.trim();
+        if (cmd.startsWith("/")) cmd = cmd.substring(1).trim();
+        if (cmd.isBlank()) return false;
+
+        CommandSenderMode effective = mode != null ? mode : CommandSenderMode.AUTO;
+        if (effective == CommandSenderMode.AUTO) {
+            boolean hasPlayerPlaceholder = template != null && template.contains("%player%");
+            effective = hasPlayerPlaceholder ? CommandSenderMode.CONSOLE : CommandSenderMode.PLAYER;
+        }
+
+        boolean ok = dispatchAs(effective, cmd, player);
+        if (!ok) {
+            CommandSenderMode fallback = (effective == CommandSenderMode.CONSOLE) ? CommandSenderMode.PLAYER : CommandSenderMode.CONSOLE;
+            ok = dispatchAs(fallback, cmd, player);
+        }
+        return ok;
+    }
+
+    private boolean dispatchAs(CommandSenderMode mode, String cmd, Player player) {
+        if (mode == CommandSenderMode.PLAYER) {
+            return player.performCommand(cmd);
+        }
+        return Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
+    }
+
+    private ItemStack tryCreateQualityArmoryItem(String itemName) {
+        try {
+            Class<?> api = Class.forName("me.zombie_striker.qg.api.QualityArmory");
+            java.lang.reflect.Method m = api.getMethod("getCustomItemAsItemStack", String.class);
+            Object out = m.invoke(null, itemName);
+            if (out instanceof ItemStack it) return it;
+            return null;
+        } catch (Throwable ignored) {
+            return null;
+        }
     }
 
     public boolean isShopInventory(InventoryHolder holder) {

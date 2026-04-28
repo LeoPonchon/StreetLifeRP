@@ -9,12 +9,14 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.shimakuro.streetLifeRP.core.StreetLifeRPContext;
 
+import java.util.Locale;
 import java.util.Map;
 
 public final class PhoneSlotGuardListener implements Listener {
@@ -31,6 +33,22 @@ public final class PhoneSlotGuardListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onRespawn(PlayerRespawnEvent event) {
+        ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> ensurePhone(event.getPlayer()));
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    public void onClearCommand(PlayerCommandPreprocessEvent event) {
+        String raw = event.getMessage();
+        if (raw == null || raw.isBlank() || raw.charAt(0) != '/') return;
+
+        String cmd = raw.substring(1).trim();
+        if (cmd.isEmpty()) return;
+
+        int space = cmd.indexOf(' ');
+        String label = (space == -1 ? cmd : cmd.substring(0, space)).toLowerCase(Locale.ROOT);
+        if (!label.equals("clear") && !label.equals("minecraft:clear") && !label.equals("essentials:clear")) return;
+
+        // Let the clear command run, then restore the phone if it was wiped.
         ctx.plugin().getServer().getScheduler().runTask(ctx.plugin(), () -> ensurePhone(event.getPlayer()));
     }
 
@@ -120,4 +138,3 @@ public final class PhoneSlotGuardListener implements Listener {
         inv.setItem(PhoneItemService.HOTBAR_SLOT, ctx.phoneItems().create());
     }
 }
-

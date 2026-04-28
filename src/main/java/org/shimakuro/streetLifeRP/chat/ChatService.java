@@ -199,9 +199,10 @@ public final class ChatService {
             case UNEMPLOYED -> "Chômeur";
             case DELIVERY -> "Livreur";
             case BAKER -> "Boulanger";
+            case RESTAURATEUR -> "Restauration";
             case MECHANIC -> "Mécano";
             case DEALER -> "Dealer";
-            case GUNSMITH -> "Armurier";
+            case STRIP_CLUB -> "Strip Club";
             case POLICE -> "Police";
             case EMS -> "EMS";
             case ADMINPLUS -> "Admin+";

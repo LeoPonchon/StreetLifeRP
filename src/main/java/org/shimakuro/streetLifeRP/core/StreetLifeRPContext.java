@@ -7,6 +7,7 @@ import org.shimakuro.streetLifeRP.core.config.ConfigService;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
+import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
 import org.shimakuro.streetLifeRP.identity.IdentityService;
 import org.shimakuro.streetLifeRP.jobs.JobService;
@@ -37,6 +38,7 @@ public final class StreetLifeRPContext {
     private final EmsService ems;
     private final ChatService chat;
     private final SpecialItemService items;
+    private final UnconsciousService unconscious;
     private final PhoneService phone;
     private final PhoneMenuService phoneMenu;
     private final PhoneItemService phoneItems;
@@ -60,6 +62,7 @@ public final class StreetLifeRPContext {
             EmsService ems,
             ChatService chat,
             SpecialItemService items,
+            UnconsciousService unconscious,
             PhoneService phone,
             PhoneMenuService phoneMenu,
             PhoneItemService phoneItems,
@@ -82,6 +85,7 @@ public final class StreetLifeRPContext {
         this.ems = ems;
         this.chat = chat;
         this.items = items;
+        this.unconscious = unconscious;
         this.phone = phone;
         this.phoneMenu = phoneMenu;
         this.phoneItems = phoneItems;
@@ -145,6 +149,10 @@ public final class StreetLifeRPContext {
 
     public SpecialItemService items() {
         return items;
+    }
+
+    public UnconsciousService unconscious() {
+        return unconscious;
     }
 
     public PhoneService phone() {

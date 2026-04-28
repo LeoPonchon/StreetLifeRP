@@ -16,10 +16,13 @@ import org.shimakuro.streetLifeRP.data.PlayerDataListener;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
 import org.shimakuro.streetLifeRP.ems.EmsService;
+import org.shimakuro.streetLifeRP.health.UnconsciousListener;
+import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.items.SpecialItemListener;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
 import org.shimakuro.streetLifeRP.identity.IdentityService;
 import org.shimakuro.streetLifeRP.jobs.JobService;
+import org.shimakuro.streetLifeRP.jobs.JobSalaryService;
 import org.shimakuro.streetLifeRP.justice.JusticeListener;
 import org.shimakuro.streetLifeRP.justice.CuffedRestrictionListener;
 import org.shimakuro.streetLifeRP.justice.JusticeService;
@@ -35,7 +38,8 @@ import org.shimakuro.streetLifeRP.trade.TradeListener;
 import org.shimakuro.streetLifeRP.trade.TradeService;
 import org.shimakuro.streetLifeRP.vehicles.GarageListener;
 import org.shimakuro.streetLifeRP.vehicles.GarageService;
-import org.shimakuro.streetLifeRP.vehicles.QavShiftRightClickCancelListener;
+import org.shimakuro.streetLifeRP.vehicles.FuelStationListener;
+import org.shimakuro.streetLifeRP.vehicles.VehicleBreakdownListener;
 import org.shimakuro.streetLifeRP.input.InputListener;
 import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.economy.CashItemListener;
@@ -60,9 +64,8 @@ public final class StreetLifeRP extends JavaPlugin {
         EconomyService economyService = new EconomyService(playerDataRepository, antiAbuseService, auditLogService, configService.currencySymbol());
         CharacterService characterService = new CharacterService(playerDataRepository, identityService, configService.startingCash(), configService.startingBank());
         ShopService shopService = new ShopService(this, antiAbuseService, economyService);
-        JobService jobService = new JobService(playerDataRepository, antiAbuseService, economyService);
+        JobService jobService = new JobService(playerDataRepository);
         JusticeService justiceService = new JusticeService(this, playerDataRepository, antiAbuseService, economyService, auditLogService);
-        EmsService emsService = new EmsService();
         ChatService chatService = new ChatService(playerDataRepository, jobService, antiAbuseService, auditLogService);
         SpecialItemService itemService = new SpecialItemService(this);
         PhoneService phoneService = new PhoneService(playerDataRepository, antiAbuseService, auditLogService);
@@ -72,6 +75,9 @@ public final class StreetLifeRP extends JavaPlugin {
         TradeService tradeService = new TradeService(this, auditLogService, playerDataRepository);
         GarageService garageService = new GarageService(this, playerDataRepository, antiAbuseService, economyService, auditLogService);
         CraftingService craftingService = new CraftingService(this, jobService);
+        JobSalaryService jobSalaryService = new JobSalaryService(this, configService, playerDataRepository, jobService, economyService);
+        UnconsciousService unconsciousService = new UnconsciousService(this, playerDataRepository, configService.prefix());
+        EmsService emsService = new EmsService(unconsciousService);
         PhoneMenuService phoneMenuService = new PhoneMenuService(
                 this,
                 configService,
@@ -87,7 +93,8 @@ public final class StreetLifeRP extends JavaPlugin {
                 inputService,
                 cashItemService,
                 itemService,
-                garageService
+                garageService,
+                unconsciousService
         );
 
         this.context = new StreetLifeRPContext(
@@ -105,6 +112,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 emsService,
                 chatService,
                 itemService,
+                unconsciousService,
                 phoneService,
                 phoneMenuService,
                 phoneItemService,
@@ -164,6 +172,22 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void disable() {
                 playerDataRepository.saveAll();
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
+                return "Salary";
+            }
+
+            @Override
+            public void enable() {
+                jobSalaryService.enable();
+            }
+
+            @Override
+            public void disable() {
+                jobSalaryService.disable();
             }
         });
         moduleManager.register(new Module() {
@@ -255,6 +279,23 @@ public final class StreetLifeRP extends JavaPlugin {
         moduleManager.register(new Module() {
             @Override
             public String name() {
+                return "Health";
+            }
+
+            @Override
+            public void enable() {
+                unconsciousService.enable();
+                getServer().getPluginManager().registerEvents(new UnconsciousListener(context), StreetLifeRP.this);
+            }
+
+            @Override
+            public void disable() {
+                unconsciousService.disable();
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
                 return "Input";
             }
 
@@ -309,7 +350,8 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void enable() {
                 getServer().getPluginManager().registerEvents(new GarageListener(context), StreetLifeRP.this);
-                getServer().getPluginManager().registerEvents(new QavShiftRightClickCancelListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new FuelStationListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new VehicleBreakdownListener(context), StreetLifeRP.this);
             }
 
             @Override

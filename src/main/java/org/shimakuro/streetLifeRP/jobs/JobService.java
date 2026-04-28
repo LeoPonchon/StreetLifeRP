@@ -1,11 +1,7 @@
 package org.shimakuro.streetLifeRP.jobs;
 
 import org.bukkit.configuration.ConfigurationSection;
-import org.shimakuro.streetLifeRP.antiabuse.AntiAbuseAction;
-import org.shimakuro.streetLifeRP.antiabuse.AntiAbuseService;
-import org.shimakuro.streetLifeRP.data.PlayerData;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
-import org.shimakuro.streetLifeRP.economy.EconomyService;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -13,14 +9,10 @@ import java.util.UUID;
 
 public final class JobService {
     private final PlayerDataRepository repo;
-    private final AntiAbuseService antiAbuse;
-    private final EconomyService economy;
     private volatile Map<JobType, JobConfig> jobConfigs = new EnumMap<>(JobType.class);
 
-    public JobService(PlayerDataRepository repo, AntiAbuseService antiAbuse, EconomyService economy) {
+    public JobService(PlayerDataRepository repo) {
         this.repo = repo;
-        this.antiAbuse = antiAbuse;
-        this.economy = economy;
     }
 
     public void reloadFromConfig(ConfigurationSection section) {
@@ -45,50 +37,18 @@ public final class JobService {
     }
 
     public void set(UUID uuid, JobType type) {
-        PlayerData data = repo.get(uuid);
+        var data = repo.get(uuid);
         data.setJob(type.name());
         repo.save(data);
     }
 
-    public WorkResult work(UUID uuid) {
-        if (!antiAbuse.allowAndMark(uuid, AntiAbuseAction.JOB_WORK)) {
-            return WorkResult.TOO_FAST;
-        }
+    public double salary(JobType type) {
+        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L)).salary();
+    }
 
-        JobType type = get(uuid);
-        JobConfig cfg = jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L));
-
-        long now = System.currentTimeMillis();
-        PlayerData data = repo.get(uuid);
-        long last = data.lastWorkAtMillis();
-        if (last > 0 && (now - last) < (cfg.cooldownSeconds() * 1000L)) {
-            long remaining = (cfg.cooldownSeconds() * 1000L - (now - last) + 999) / 1000;
-            return WorkResult.cooldown(remaining);
-        }
-
-        data.setLastWorkAtMillis(now);
-        repo.save(data);
-        double applied = economy.addCashSigned(uuid, cfg.salary(), "job_work:" + type.name());
-        return WorkResult.paid(applied);
+    public long cooldownSeconds(JobType type) {
+        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L)).cooldownSeconds();
     }
 
     private record JobConfig(double salary, long cooldownSeconds) {}
-
-    public sealed interface WorkResult permits WorkResultPaid, WorkResultCooldown, WorkResultTooFast {
-        static WorkResult paid(double amount) {
-            return new WorkResultPaid(amount);
-        }
-
-        static WorkResult cooldown(long secondsRemaining) {
-            return new WorkResultCooldown(secondsRemaining);
-        }
-
-        WorkResult TOO_FAST = new WorkResultTooFast();
-    }
-
-    public record WorkResultPaid(double amount) implements WorkResult {}
-
-    public record WorkResultCooldown(long secondsRemaining) implements WorkResult {}
-
-    public static final class WorkResultTooFast implements WorkResult {}
 }

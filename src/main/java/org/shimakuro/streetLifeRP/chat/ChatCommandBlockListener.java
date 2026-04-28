@@ -24,6 +24,9 @@ public final class ChatCommandBlockListener implements Listener {
             "qav2",
             "qualityarmoryvehicles",
             "qualityarmoryvehicles2",
+            // Guns (QualityArmory) - block all player commands
+            "qa",
+            "qualityarmory",
             // Common aliases (plugins)
             "m", "t",
             "pm", "dm",

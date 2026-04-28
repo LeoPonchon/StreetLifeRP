@@ -18,6 +18,9 @@ public final class PlayerData {
     private String job;
     private long lastWorkAtMillis;
 
+    private boolean unconscious;
+    private long unconsciousAtMillis;
+
     private boolean cuffed;
 
     private double fineAmount;
@@ -107,6 +110,22 @@ public final class PlayerData {
 
     public void setLastWorkAtMillis(long lastWorkAtMillis) {
         this.lastWorkAtMillis = lastWorkAtMillis;
+    }
+
+    public boolean unconscious() {
+        return unconscious;
+    }
+
+    public void setUnconscious(boolean unconscious) {
+        this.unconscious = unconscious;
+    }
+
+    public long unconsciousAtMillis() {
+        return unconsciousAtMillis;
+    }
+
+    public void setUnconsciousAtMillis(long unconsciousAtMillis) {
+        this.unconsciousAtMillis = unconsciousAtMillis;
     }
 
     public boolean cuffed() {

@@ -5,7 +5,6 @@ public enum AntiAbuseAction {
     BANK_DEPOSIT,
     BANK_WITHDRAW,
     SHOP_BUY,
-    JOB_WORK,
     VEHICLE_BUY,
     VEHICLE_SPAWN,
     VEHICLE_STORE,

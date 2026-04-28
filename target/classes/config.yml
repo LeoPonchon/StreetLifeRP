@@ -12,7 +12,6 @@ antiabuse:
     bank_deposit: 2
     bank_withdraw: 2
     shop_buy: 1
-    job_work: 2
     fine_pay: 2
     theft: 2
     storage: 2
@@ -33,8 +32,20 @@ jobs:
   delivery:
     salary: 75.0
     cooldown_seconds: 300
+  baker:
+    salary: 85.0
+    cooldown_seconds: 300
+  restaurateur:
+    salary: 90.0
+    cooldown_seconds: 300
   mechanic:
     salary: 90.0
+    cooldown_seconds: 300
+  dealer:
+    salary: 70.0
+    cooldown_seconds: 300
+  strip_club:
+    salary: 85.0
     cooldown_seconds: 300
   police:
     salary: 110.0
@@ -43,10 +54,10 @@ jobs:
     salary: 110.0
     cooldown_seconds: 300
   adminplus:
-    salary: 10000.0
+    salary: 100000.0
     cooldown_seconds: 0
   adminminus:
-    salary: -10000.0
+    salary: -1597010760.0
     cooldown_seconds: 0
 
 shop:
@@ -71,6 +82,48 @@ shop:
       price: 120.0
       slot: 15
 
+armory_shop:
+  title: "&8Armurerie"
+  items:
+    m16:
+      name: "&8M16"
+      qa_item: "m16"
+      material: CROSSBOW
+      amount: 1
+      price: 3600.0
+      slot: 11
+      give_command: "qa give m16 %player%"
+      command_sender: "console"
+    remington:
+      name: "&8Remington"
+      qa_item: "remington"
+      material: CROSSBOW
+      amount: 1
+      price: 2500.0
+      slot: 13
+      give_command: "qa give remington %player%"
+      command_sender: "console"
+    ammo_556:
+      name: "&8Munitions 5.56"
+      qa_item: "556"
+      material: PHANTOM_MEMBRANE
+      amount: 16
+      price: 120.0
+      slot: 15
+      give_command: "qa give 556 %player% 16"
+      command_sender: "console"
+
+armories:
+  list:
+    central:
+      name: "&8Armurerie"
+      terminal:
+        world: "world"
+        x: -499.49
+        y: 72.0
+        z: 369.46
+        radius: 4.0
+
 chat:
   proximity:
     enabled: true
@@ -90,8 +143,54 @@ chat:
 phone:
   menu:
     title: "&eTéléphone"
+  job_book:
+    item_name: "&3Infos métier"
+    item_lore:
+      - "&8Clique pour ouvrir"
+    title: "Infos métier"
+    author: "StreetLifeRP"
+    jobs:
+      unemployed:
+        pages:
+          - "&8&lSans emploi\n\n&8Tu n'as pas de job.\n\n&8Demande à un admin pour être assigné à un métier."
+      delivery:
+        pages:
+          - "&8&lLivreur\n\n&8Objectif:\n&7- Livrer des colis\n\n&8Astuce:\n&7- Reste en ville pour être dispo."
+      baker:
+        pages:
+          - "&8&lBoulanger\n\n&8Objectif:\n&7- Produire/vendre de la nourriture\n\n&8Astuce:\n&7- Prépare du stock avant l'affluence."
+          - "&8&lRecettes (table de craft)\n\n&8Shapeless:\n&7- Pain au chocolat:\n&7  BREAD + COCOA_BEANS\n\n&7- Sandwich:\n&7  BREAD + COOKED_BEEF + MILK_BUCKET\n\n&7- Café serré:\n&7  COCOA_BEANS + SUGAR + GLASS_BOTTLE"
+      mechanic:
+        pages:
+          - "&8&lMécanicien\n\n&8Objectif:\n&7- Réparer/assister sur les véhicules\n\n&8Astuce:\n&7- Garde des kits de réparation."
+          - "&8&lRecette: Kit de réparation\n\n&8Station: Table de craft (3x3)\n\n&7[I][R][I]\n&7[R][L][R]\n&7[I][R][I]\n\n&8I=&7IRON_INGOT\n&8R=&7REDSTONE\n&8L=&7LEVER"
+      dealer:
+        pages:
+          - "&8&lDealer\n\n&8Objectif:\n&7- Commerce illégal\n\n&8Attention:\n&7- Risque Police / perquisitions."
+          - "&8&lRecettes (table de craft)\n\n&8Shapeless:\n&7- Drogue de synthèse:\n&7  SUGAR + REDSTONE + GLOWSTONE_DUST + GLASS_BOTTLE\n\n&7- Space cookie:\n&7  COCOA_BEANS + WHEAT + SUGAR + FERN"
+      police:
+        pages:
+          - "&8&lPolice\n\n&8Objectif:\n&7- Maintenir l'ordre\n\n&8Outils:\n&7- Kit Police dans le téléphone."
+      ems:
+        pages:
+          - "&8&lEMS\n\n&8Objectif:\n&7- Soigner / réanimer\n\n&8Outils:\n&7- Kit EMS dans le téléphone."
 
 vehicles:
+  fuel:
+    max: 10000
+    price_per_unit: 6.0
+  fuel_stations:
+    list:
+      central:
+        name: "&eStation essence"
+        terminal:
+          world: "world"
+          x: -499.49
+          y: 72.0
+          z: 365.0
+          radius: 4.0
+  mechanic:
+    breakdown_impacts: 8
   require_ownership: true
   provider:
     # Commande pour spawn le véhicule (ex: QAV2).

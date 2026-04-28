@@ -50,6 +50,8 @@ public final class PlayerDataRepository {
 
         cfg.set("jobs.type", data.job());
         cfg.set("jobs.last_work_at", data.lastWorkAtMillis());
+        cfg.set("health.unconscious", data.unconscious());
+        cfg.set("health.unconscious_at", data.unconsciousAtMillis());
 
         cfg.set("justice.cuffed", data.cuffed());
 
@@ -89,6 +91,8 @@ public final class PlayerDataRepository {
 
         data.setJob(cfg.getString("jobs.type"));
         data.setLastWorkAtMillis(cfg.getLong("jobs.last_work_at", 0L));
+        data.setUnconscious(cfg.getBoolean("health.unconscious", false));
+        data.setUnconsciousAtMillis(cfg.getLong("health.unconscious_at", 0L));
 
         data.setCuffed(cfg.getBoolean("justice.cuffed", false));
 
