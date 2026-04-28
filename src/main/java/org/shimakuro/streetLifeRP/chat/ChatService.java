@@ -201,9 +201,7 @@ public final class ChatService {
             case BAKER -> "Boulanger";
             case BAR -> "Bar";
             case GROCERY -> "SupÃ©rette";
-            case LAWYER -> "Avocat";
             case JOURNALIST -> "Journaliste";
-            case REAL_ESTATE -> "Immobilier";
             case MECHANIC -> "Mécano";
             case DEALER -> "Dealer";
             case STRIP_CLUB -> "Strip Club";

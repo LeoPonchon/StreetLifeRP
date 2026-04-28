@@ -13,10 +13,12 @@ banks:
       name: "&eBanque Centrale"
       terminal:
         world: "world"
-        x: -520.0
-        y: 71.0
-        z: 355.0
-        radius: 4.0
+        x1: -516.0
+        y1: 71.0
+        z1: 358.0
+        x2: -523.0
+        y2: 71.0
+        z2: 351.0
       vault_initial: 50000.0
 
 economy:
@@ -59,14 +61,8 @@ jobs:
   grocery:
     salary: 90.0
     cooldown_seconds: 300
-  lawyer:
-    salary: 95.0
-    cooldown_seconds: 300
   journalist:
     salary: 85.0
-    cooldown_seconds: 300
-  real_estate:
-    salary: 95.0
     cooldown_seconds: 300
   mechanic:
     salary: 90.0
@@ -143,10 +139,12 @@ armories:
       name: "&8Armurerie"
       terminal:
         world: "world"
-        x: -499.49
-        y: 72.0
-        z: 369.46
-        radius: 4.0
+        x1: -496.0
+        y1: 72.0
+        z1: 372.0
+        x2: -502.0
+        y2: 72.0
+        z2: 366.0
 
 chat:
   proximity:
@@ -227,10 +225,12 @@ vehicles:
       name: "&eGarage Central"
       terminal:
         world: "world"
-        x: 0.0
-        y: 64.0
-        z: 0.0
-        radius: 4.0
+        x1: -502.0
+        y1: 72.0
+        z1: 382.0
+        x2: -496.0
+        y2: 72.0
+        z2: 376.0
       spawn:
         # Le joueur doit être près de ce point pour sortir un véhicule.
         world: "world"

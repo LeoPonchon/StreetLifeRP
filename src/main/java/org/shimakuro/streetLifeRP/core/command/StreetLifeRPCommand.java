@@ -206,7 +206,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
 
         String action = args[1].toLowerCase();
         if (action.equals("list")) {
-            player.sendMessage(ctx.config().prefix() + ChatColor.YELLOW + "Métiers: " + ChatColor.WHITE + "UNEMPLOYED, TAXI, BAR, GROCERY, LAWYER, JOURNALIST, REAL_ESTATE, MECHANIC, POLICE, BAKER, DEALER, STRIP_CLUB, EMS");
+            player.sendMessage(ctx.config().prefix() + ChatColor.YELLOW + "Métiers: " + ChatColor.WHITE + "UNEMPLOYED, TAXI, BAR, GROCERY, JOURNALIST, MECHANIC, POLICE, BAKER, DEALER, STRIP_CLUB, EMS");
             return true;
         }
         if (action.equals("set")) {
@@ -448,7 +448,7 @@ public final class StreetLifeRPCommand implements CommandExecutor, TabCompleter 
             return List.of("cuff", "uncuff", "fine");
         }
         if (args.length == 3 && args[0].equalsIgnoreCase("job") && args[1].equalsIgnoreCase("set")) {
-            return List.of("UNEMPLOYED", "TAXI", "BAR", "GROCERY", "LAWYER", "JOURNALIST", "REAL_ESTATE", "MECHANIC", "POLICE", "BAKER", "DEALER", "STRIP_CLUB", "EMS");
+            return List.of("UNEMPLOYED", "TAXI", "BAR", "GROCERY", "JOURNALIST", "MECHANIC", "POLICE", "BAKER", "DEALER", "STRIP_CLUB", "EMS");
         }
         if (args.length == 2 && args[0].equalsIgnoreCase("admin")) {
             return List.of("character", "item", "cuff");

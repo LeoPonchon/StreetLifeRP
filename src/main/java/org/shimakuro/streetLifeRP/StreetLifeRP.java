@@ -38,10 +38,12 @@ import org.shimakuro.streetLifeRP.phone.PhoneItemListener;
 import org.shimakuro.streetLifeRP.phone.PhoneSlotGuardListener;
 import org.shimakuro.streetLifeRP.shops.ShopListener;
 import org.shimakuro.streetLifeRP.shops.ShopService;
+import org.shimakuro.streetLifeRP.shops.ArmoryInteractListener;
 import org.shimakuro.streetLifeRP.trade.TradeListener;
 import org.shimakuro.streetLifeRP.trade.TradeService;
 import org.shimakuro.streetLifeRP.vehicles.GarageListener;
 import org.shimakuro.streetLifeRP.vehicles.GarageService;
+import org.shimakuro.streetLifeRP.vehicles.GarageInteractListener;
 import org.shimakuro.streetLifeRP.vehicles.FuelStationListener;
 import org.shimakuro.streetLifeRP.vehicles.VehicleBreakdownListener;
 import org.shimakuro.streetLifeRP.vehicles.QavShiftRightClickCancelListener;
@@ -244,6 +246,7 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void enable() {
                 getServer().getPluginManager().registerEvents(new ShopListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new ArmoryInteractListener(context), StreetLifeRP.this);
             }
 
             @Override
@@ -380,6 +383,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 // Hard reset: wipe QAV2 saved vehicle state file on each (re)start.
                 garageService.wipeQav2VehicleDataFile();
                 getServer().getPluginManager().registerEvents(new GarageListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new GarageInteractListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new FuelStationListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new VehicleBreakdownListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new QavShiftRightClickCancelListener(context), StreetLifeRP.this);

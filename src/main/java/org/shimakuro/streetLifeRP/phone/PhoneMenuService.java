@@ -128,7 +128,7 @@ public final class PhoneMenuService {
     public void open(Player player, String prefix) {
         PlayerData data = repo.get(player.getUniqueId());
         String title = title();
-        Inventory inv = Bukkit.createInventory(new PhoneHolder(), 27, title);
+        Inventory inv = Bukkit.createInventory(new PhoneHolder(), 54, title);
 
         if (player.hasPermission("streetliferp.admin.character.delete")) {
             inv.setItem(0, appItem(Material.BARRIER, ChatColor.RED + "Admin: supprimer perso", List.of(
@@ -627,12 +627,26 @@ public final class PhoneMenuService {
             double x = t.getDouble("x", 0.0);
             double y = t.getDouble("y", 64.0);
             double z = t.getDouble("z", 0.0);
-            double radius = t.getDouble("radius", 4.0);
-            double dx = Math.abs(loc.getX() - x);
-            double dy = Math.abs(loc.getY() - y);
-            double dz = Math.abs(loc.getZ() - z);
-            // Square radius (axis-aligned box) instead of circle.
-            if (dx <= radius && dz <= radius && dy <= radius) return true;
+
+            if (!t.contains("x1") || !t.contains("y1") || !t.contains("z1")
+                    || !t.contains("x2") || !t.contains("y2") || !t.contains("z2")) {
+                continue;
+            }
+            double x1 = t.getDouble("x1");
+            double y1 = t.getDouble("y1");
+            double z1 = t.getDouble("z1");
+            double x2 = t.getDouble("x2");
+            double y2 = t.getDouble("y2");
+            double z2 = t.getDouble("z2");
+            double minX = Math.min(x1, x2);
+            double minY = Math.min(y1, y2);
+            double minZ = Math.min(z1, z2);
+            double maxX = Math.max(x1, x2);
+            double maxY = Math.max(y1, y2);
+            double maxZ = Math.max(z1, z2);
+            if (loc.getX() >= minX && loc.getX() <= maxX
+                    && loc.getY() >= minY && loc.getY() <= maxY
+                    && loc.getZ() >= minZ && loc.getZ() <= maxZ) return true;
         }
         return false;
     }
@@ -700,9 +714,7 @@ public final class PhoneMenuService {
             case BAKER -> "Boulanger";
             case BAR -> "Bar";
             case GROCERY -> "Supérette";
-            case LAWYER -> "Avocat";
             case JOURNALIST -> "Journaliste";
-            case REAL_ESTATE -> "Immobilier";
             case MECHANIC -> "Mécanicien";
             case DEALER -> "Dealer";
             case STRIP_CLUB -> "Strip club";
@@ -760,7 +772,7 @@ public final class PhoneMenuService {
         Player target = Bukkit.getPlayer(targetUuid);
         String rpName = characters.rpNameOrNull(targetUuid);
         String title = ChatColor.AQUA + "Team: " + (rpName != null ? rpName : targetUuid.toString());
-        Inventory inv = Bukkit.createInventory(new AdminJobHolder(targetUuid), 27, title);
+        Inventory inv = Bukkit.createInventory(new AdminJobHolder(targetUuid), 54, title);
         int slot = 0;
         for (JobType type : JobType.values()) {
             ItemStack it = appItem(Material.NAME_TAG, ChatColor.YELLOW + type.name(), List.of(ChatColor.GRAY + "Cliquer"), APP_ADMIN_SET_JOB);

@@ -73,7 +73,7 @@ public final class BankService {
     public BankDef findBankNear(Player player) {
         if (player == null) return null;
         for (BankDef b : banks.values()) {
-            if (b.terminal().isNearSquare(player.getLocation())) return b;
+            if (b.terminal().contains(player.getLocation())) return b;
         }
         return null;
     }
@@ -202,25 +202,42 @@ public final class BankService {
 
     public record BankDef(String id, String name, Zone terminal, double vaultInitial) {}
 
-    public record Zone(String world, double x, double y, double z, double radius) {
+    public record Zone(String world, double x1, double y1, double z1, double x2, double y2, double z2) {
         static Zone read(ConfigurationSection section) {
             if (section == null) return null;
             String world = section.getString("world");
             if (world == null || world.isBlank()) return null;
-            double x = section.getDouble("x", 0.0);
-            double y = section.getDouble("y", 64.0);
-            double z = section.getDouble("z", 0.0);
-            double radius = Math.max(0.5, section.getDouble("radius", 4.0));
-            return new Zone(world, x, y, z, radius);
+
+            // A->B box only.
+            if (!section.contains("x1") || !section.contains("y1") || !section.contains("z1")
+                    || !section.contains("x2") || !section.contains("y2") || !section.contains("z2")) {
+                return null;
+            }
+            double x1 = section.getDouble("x1");
+            double y1 = section.getDouble("y1");
+            double z1 = section.getDouble("z1");
+            double x2 = section.getDouble("x2");
+            double y2 = section.getDouble("y2");
+            double z2 = section.getDouble("z2");
+            return normalize(world, x1, y1, z1, x2, y2, z2);
         }
 
-        boolean isNearSquare(org.bukkit.Location loc) {
+        private static Zone normalize(String world, double ax, double ay, double az, double bx, double by, double bz) {
+            double minX = Math.min(ax, bx);
+            double minY = Math.min(ay, by);
+            double minZ = Math.min(az, bz);
+            double maxX = Math.max(ax, bx);
+            double maxY = Math.max(ay, by);
+            double maxZ = Math.max(az, bz);
+            return new Zone(world, minX, minY, minZ, maxX, maxY, maxZ);
+        }
+
+        boolean contains(org.bukkit.Location loc) {
             if (loc == null || loc.getWorld() == null) return false;
             if (!loc.getWorld().getName().equalsIgnoreCase(world)) return false;
-            double dx = Math.abs(loc.getX() - x);
-            double dy = Math.abs(loc.getY() - y);
-            double dz = Math.abs(loc.getZ() - z);
-            return dx <= radius && dy <= radius && dz <= radius;
+            return loc.getX() >= x1 && loc.getX() <= x2
+                    && loc.getY() >= y1 && loc.getY() <= y2
+                    && loc.getZ() >= z1 && loc.getZ() <= z2;
         }
     }
 

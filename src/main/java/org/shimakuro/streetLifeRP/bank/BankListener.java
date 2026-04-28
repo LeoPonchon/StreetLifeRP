@@ -18,7 +18,7 @@ public final class BankListener implements Listener {
         this.ctx = ctx;
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR) return;
         if (event.getItem() != null && !event.getItem().getType().isAir()) return; // banque = main vide

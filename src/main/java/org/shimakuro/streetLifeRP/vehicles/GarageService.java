@@ -96,7 +96,7 @@ public final class GarageService {
         Location here = player.getLocation();
         Settings s = settings;
         for (Garage g : s.garages().values()) {
-            if (g.terminal().isNear(here)) return g;
+            if (g.terminal().contains(here)) return g;
         }
         return null;
     }
@@ -174,7 +174,7 @@ public final class GarageService {
     }
 
     public void openDealershipMenu(Player player, Garage garage, String prefix) {
-        Inventory inv = Bukkit.createInventory(new DealerHolder(garage.id()), 54, ChatColor.GOLD + "Concession - " + garage.plainName());
+        Inventory inv = Bukkit.createInventory(new DealerHolder(garage.id()), 27, ChatColor.GOLD + "Concession - " + garage.plainName());
         inv.setItem(SLOT_INFO, infoItem(garage));
         inv.setItem(8, backItem("garage", garage));
 
@@ -676,7 +676,7 @@ public final class GarageService {
         return it;
     }
 
-    public record Garage(String id, String name, Zone terminal, Zone spawn) {
+    public record Garage(String id, String name, BoxZone terminal, Zone spawn) {
         public String plainName() {
             return ChatColor.stripColor(ChatColor.translateAlternateColorCodes('&', name));
         }
@@ -708,6 +708,49 @@ public final class GarageService {
 
         public String pretty() {
             return world + " " + Math.round(x) + " " + Math.round(y) + " " + Math.round(z);
+        }
+    }
+
+    public record BoxZone(String world, double x1, double y1, double z1, double x2, double y2, double z2) {
+        public boolean contains(Location loc) {
+            if (loc == null || loc.getWorld() == null || world == null) return false;
+            if (!loc.getWorld().getName().equalsIgnoreCase(world)) return false;
+            return loc.getX() >= x1 && loc.getX() <= x2
+                    && loc.getY() >= y1 && loc.getY() <= y2
+                    && loc.getZ() >= z1 && loc.getZ() <= z2;
+        }
+
+        public String pretty() {
+            return world + " A(" + Math.round(x1) + " " + Math.round(y1) + " " + Math.round(z1) + ")"
+                    + " B(" + Math.round(x2) + " " + Math.round(y2) + " " + Math.round(z2) + ")";
+        }
+
+        static BoxZone read(ConfigurationSection section) {
+            if (section == null) return null;
+            String world = section.getString("world");
+            if (world == null || world.isBlank()) return null;
+
+            if (!section.contains("x1") || !section.contains("y1") || !section.contains("z1")
+                    || !section.contains("x2") || !section.contains("y2") || !section.contains("z2")) {
+                return null;
+            }
+            double x1 = section.getDouble("x1");
+            double y1 = section.getDouble("y1");
+            double z1 = section.getDouble("z1");
+            double x2 = section.getDouble("x2");
+            double y2 = section.getDouble("y2");
+            double z2 = section.getDouble("z2");
+            return normalize(world, x1, y1, z1, x2, y2, z2);
+        }
+
+        private static BoxZone normalize(String world, double ax, double ay, double az, double bx, double by, double bz) {
+            double minX = Math.min(ax, bx);
+            double minY = Math.min(ay, by);
+            double minZ = Math.min(az, bz);
+            double maxX = Math.max(ax, bx);
+            double maxY = Math.max(ay, by);
+            double maxZ = Math.max(az, bz);
+            return new BoxZone(world, minX, minY, minZ, maxX, maxY, maxZ);
         }
     }
 
@@ -785,7 +828,7 @@ public final class GarageService {
                     ConfigurationSection g = garagesSection.getConfigurationSection(id);
                     if (g == null) continue;
                     String name = g.getString("name", "&eGarage");
-                    Zone terminal = readZone(g.getConfigurationSection("terminal"));
+                    BoxZone terminal = BoxZone.read(g.getConfigurationSection("terminal"));
                     Zone spawn = readZone(g.getConfigurationSection("spawn"));
                     if (terminal == null || spawn == null) continue;
                     garages.put(id, new Garage(id, name, terminal, spawn));
