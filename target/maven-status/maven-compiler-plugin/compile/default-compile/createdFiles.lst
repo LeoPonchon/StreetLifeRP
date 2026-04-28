@@ -1,4 +1,6 @@
 org\shimakuro\streetLifeRP\health\UnconsciousMoveListener.class
+org\shimakuro\streetLifeRP\bank\BankService.class
+org\shimakuro\streetLifeRP\bank\BankRobberyService$PendingLoot.class
 org\shimakuro\streetLifeRP\StreetLifeRP$7.class
 org\shimakuro\streetLifeRP\health\UnconsciousService.class
 org\shimakuro\streetLifeRP\ems\EmsService.class
@@ -7,6 +9,7 @@ org\shimakuro\streetLifeRP\economy\EconomyService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$Zone.class
 org\shimakuro\streetLifeRP\chat\ChatCommandBlockListener.class
 org\shimakuro\streetLifeRP\shops\ShopService$ShopHolder.class
+org\shimakuro\streetLifeRP\bank\BankService$BankDef.class
 org\shimakuro\streetLifeRP\shops\ShopService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$GarageHolder.class
 org\shimakuro\streetLifeRP\core\module\ModuleManager.class
@@ -43,6 +46,8 @@ org\shimakuro\streetLifeRP\StreetLifeRP$11.class
 org\shimakuro\streetLifeRP\shops\ShopService$CommandSenderMode.class
 org\shimakuro\streetLifeRP\vehicles\QavShiftRightClickCancelListener.class
 org\shimakuro\streetLifeRP\health\UnconsciousListener.class
+org\shimakuro\streetLifeRP\bank\BankListener.class
+org\shimakuro\streetLifeRP\StreetLifeRP$17.class
 org\shimakuro\streetLifeRP\vehicles\QavVehicleReflection.class
 org\shimakuro\streetLifeRP\input\InputListener.class
 org\shimakuro\streetLifeRP\chat\ChatService.class
@@ -51,6 +56,7 @@ org\shimakuro\streetLifeRP\core\config\ConfigService.class
 org\shimakuro\streetLifeRP\StreetLifeRP$10.class
 org\shimakuro\streetLifeRP\StreetLifeRP.class
 org\shimakuro\streetLifeRP\core\module\Module.class
+org\shimakuro\streetLifeRP\bank\BankService$Zone.class
 org\shimakuro\streetLifeRP\chat\ChatService$Settings.class
 org\shimakuro\streetLifeRP\justice\JusticeService.class
 org\shimakuro\streetLifeRP\StreetLifeRP$3.class
@@ -66,6 +72,8 @@ org\shimakuro\streetLifeRP\StreetLifeRP$8.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$AdminJobHolder.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$SmsHolder.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$DealerHolder.class
+org\shimakuro\streetLifeRP\bank\BankRobberyService.class
+org\shimakuro\streetLifeRP\bank\BankService$BankHolder.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$PhoneHolder.class
 org\shimakuro\streetLifeRP\antiabuse\AntiAbuseAction.class
 org\shimakuro\streetLifeRP\core\command\RoleplayCommand.class

@@ -1,6 +1,24 @@
 messages:
   prefix: "&7[&bStreetLifeRP&7] &r"
 
+banks:
+  robbery:
+    click_cooldown_seconds: 20
+    take_ratio: 0.10
+    escape_minutes_per_1000_stolen: 1.0
+    min_escape_minutes: 1
+    max_escape_minutes: 30
+  list:
+    central:
+      name: "&eBanque Centrale"
+      terminal:
+        world: "world"
+        x: -520.0
+        y: 71.0
+        z: 355.0
+        radius: 4.0
+      vault_initial: 50000.0
+
 economy:
   currency_symbol: "$"
   starting_cash: 500.0

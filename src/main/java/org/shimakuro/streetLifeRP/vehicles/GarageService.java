@@ -68,6 +68,69 @@ public final class GarageService {
         settings = Settings.fromConfig(section);
     }
 
+    /**
+     * Best-effort cleanup to avoid QAV2 vehicle persistence/ownership edge-cases after server restarts.
+     * - Removes any existing QAV2 vehicle entities in the world.
+     * - Clears stored active vehicle UUIDs in player data files.
+     */
+    public void cleanupVehiclesOnStartup() {
+        try {
+            playerData.clearAllActiveVehicleUuids();
+        } catch (Throwable ignored) {
+            // best effort
+        }
+
+        // Try to deconstruct vehicles without giving item stacks to players (player=null).
+        try {
+            for (Object vehicle : QavVehicleReflection.getAllVehicles()) {
+                if (vehicle == null) continue;
+                try {
+                    java.lang.reflect.Method isInvalid = vehicle.getClass().getMethod("isInvalid");
+                    Object inv = isInvalid.invoke(vehicle);
+                    if (inv instanceof Boolean b && b) continue;
+                } catch (Throwable ignored) {
+                    // best effort
+                }
+
+                boolean removed = false;
+                try {
+                    java.lang.reflect.Method deconstruct = vehicle.getClass().getMethod("deconstruct", Player.class, String.class);
+                    deconstruct.invoke(vehicle, null, "StreetLifeRP:startup_cleanup");
+                    removed = true;
+                } catch (NoSuchMethodException e) {
+                    try {
+                        java.lang.reflect.Method deconstruct = vehicle.getClass().getMethod("deconstruct", Player.class, String.class, boolean.class);
+                        deconstruct.invoke(vehicle, null, "StreetLifeRP:startup_cleanup", true);
+                        removed = true;
+                    } catch (Throwable ignored2) {
+                        // ignore
+                    }
+                } catch (Throwable ignored) {
+                    // ignore
+                }
+
+                if (removed) continue;
+
+                // Fallback: remove attached entities directly (prevents players interacting and receiving items).
+                try {
+                    java.lang.reflect.Method getEntities = vehicle.getClass().getMethod("getEntities");
+                    Object out = getEntities.invoke(vehicle);
+                    if (out instanceof java.util.Collection<?> entities) {
+                        for (Object e : entities) {
+                            if (e instanceof org.bukkit.entity.Entity be) {
+                                be.remove();
+                            }
+                        }
+                    }
+                } catch (Throwable ignored3) {
+                    // ignore
+                }
+            }
+        } catch (Throwable ignored) {
+            // QAV not installed or API changed; ignore
+        }
+    }
+
     public Garage findGarageNearTerminal(Player player) {
         Location here = player.getLocation();
         Settings s = settings;

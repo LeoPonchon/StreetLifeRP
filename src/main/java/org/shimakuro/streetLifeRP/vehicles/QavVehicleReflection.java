@@ -116,10 +116,21 @@ final class QavVehicleReflection {
         }
     }
 
+    static List<?> getAllVehicles() {
+        try {
+            Class<?> main = Class.forName("me.zombie_striker.qav.Main");
+            java.lang.reflect.Field vehiclesField = main.getField("vehicles");
+            Object list = vehiclesField.get(null);
+            if (list instanceof List<?> vehicles) return vehicles;
+        } catch (Throwable ignored) {
+            // best effort
+        }
+        return List.of();
+    }
+
     static Object vehicleForPlayer(Player player) {
         Entity seat = player.getVehicle();
         if (seat == null) return null;
         return vehicleEntityByEntity(seat);
     }
 }
-

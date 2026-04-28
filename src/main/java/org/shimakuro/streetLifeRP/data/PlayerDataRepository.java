@@ -25,6 +25,26 @@ public final class PlayerDataRepository {
         playersDir.mkdirs();
     }
 
+    /**
+     * Clears persisted active vehicle UUIDs to avoid QAV2 vehicle state issues after server restarts.
+     * This is a best-effort migration/cleanup that does not load player data into the in-memory cache.
+     */
+    public void clearAllActiveVehicleUuids() {
+        File[] files = playersDir.listFiles((dir, name) -> name != null && name.endsWith(".yml"));
+        if (files == null || files.length == 0) return;
+
+        for (File file : files) {
+            try {
+                YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+                if (!cfg.contains("vehicles.active_uuid")) continue;
+                cfg.set("vehicles.active_uuid", null);
+                cfg.save(file);
+            } catch (Exception e) {
+                plugin.getLogger().log(Level.WARNING, "Failed to clear vehicles.active_uuid in " + file.getName(), e);
+            }
+        }
+    }
+
     public PlayerData get(UUID uuid) {
         return cache.computeIfAbsent(uuid, this::load);
     }

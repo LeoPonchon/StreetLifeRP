@@ -44,6 +44,7 @@ import org.shimakuro.streetLifeRP.vehicles.GarageListener;
 import org.shimakuro.streetLifeRP.vehicles.GarageService;
 import org.shimakuro.streetLifeRP.vehicles.FuelStationListener;
 import org.shimakuro.streetLifeRP.vehicles.VehicleBreakdownListener;
+import org.shimakuro.streetLifeRP.vehicles.QavShiftRightClickCancelListener;
 import org.shimakuro.streetLifeRP.input.InputListener;
 import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.economy.CashItemListener;
@@ -101,6 +102,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 cashItemService,
                 itemService,
                 garageService,
+                bankService,
                 unconsciousService
         );
 
@@ -375,9 +377,14 @@ public final class StreetLifeRP extends JavaPlugin {
 
             @Override
             public void enable() {
+                // Avoid QAV2 persistence edge-cases after restarts (e.g. getting a placeable vehicle item / instant eject).
+                // Run both immediately and shortly after startup to catch vehicles spawned by QAV during its enable phase.
+                garageService.cleanupVehiclesOnStartup();
+                getServer().getScheduler().runTaskLater(StreetLifeRP.this, garageService::cleanupVehiclesOnStartup, 60L);
                 getServer().getPluginManager().registerEvents(new GarageListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new FuelStationListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new VehicleBreakdownListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new QavShiftRightClickCancelListener(context), StreetLifeRP.this);
             }
 
             @Override

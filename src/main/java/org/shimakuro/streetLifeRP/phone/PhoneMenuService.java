@@ -29,6 +29,7 @@ import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
 import org.shimakuro.streetLifeRP.items.SpecialItemType;
 import org.shimakuro.streetLifeRP.jobs.JobType;
+import org.shimakuro.streetLifeRP.bank.BankService;
 import org.shimakuro.streetLifeRP.vehicles.GarageService;
 
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import java.util.UUID;
 public final class PhoneMenuService {
     private static final String APP_NUMBER = "number";
     private static final String APP_GARAGE = "garage";
+    private static final String APP_BANK = "bank";
     private static final String APP_SMS = "sms";
     private static final String APP_SHOP = "shop";
     private static final String APP_WALLET = "wallet";
@@ -76,6 +78,7 @@ public final class PhoneMenuService {
     private final CashItemService cashItems;
     private final SpecialItemService specialItems;
     private final GarageService garage;
+    private final BankService bank;
     private final UnconsciousService unconscious;
     private final NamespacedKey appKey;
     private final NamespacedKey uuidKey;
@@ -97,6 +100,7 @@ public final class PhoneMenuService {
             CashItemService cashItems,
             SpecialItemService specialItems,
             GarageService garage,
+            BankService bank,
             UnconsciousService unconscious
     ) {
         this.plugin = plugin;
@@ -114,6 +118,7 @@ public final class PhoneMenuService {
         this.cashItems = cashItems;
         this.specialItems = specialItems;
         this.garage = garage;
+        this.bank = bank;
         this.unconscious = unconscious;
         this.appKey = new NamespacedKey(plugin, "phone_app");
         this.uuidKey = new NamespacedKey(plugin, "phone_uuid");
@@ -159,10 +164,16 @@ public final class PhoneMenuService {
                     ChatColor.GRAY + "Acheter des armes",
                     ChatColor.DARK_GRAY + "Uniquement en armurerie"
             ), APP_ARMORY_SHOP));
+        } else if (bank != null && bank.findBankNear(player) != null) {
+            inv.setItem(6, appItem(Material.GOLD_INGOT, ChatColor.YELLOW + "Banque", List.of(
+                    ChatColor.GRAY + "Déposer / retirer / braquer",
+                    ChatColor.DARK_GRAY + "Uniquement en banque"
+            ), APP_BANK));
         } else {
             inv.setItem(6, infoItem(Material.PAPER, ChatColor.DARK_GRAY + "Accès limité", List.of(
                     ChatColor.GRAY + "Garage: va dans un garage",
-                    ChatColor.GRAY + "Armes: va dans une armurerie"
+                    ChatColor.GRAY + "Armes: va dans une armurerie",
+                    ChatColor.GRAY + "Banque: va dans une banque"
             )));
         }
         inv.setItem(10, appItem(Material.WRITABLE_BOOK, ChatColor.AQUA + "SMS", List.of(ChatColor.GRAY + "Envoyer un message"), APP_SMS));
@@ -432,6 +443,20 @@ public final class PhoneMenuService {
                 }
                 player.closeInventory();
                 garage.openGarageMenu(player, g, prefix);
+                yield true;
+            }
+            case APP_BANK -> {
+                if (!data.hasCharacter()) {
+                    player.sendMessage(prefix + ChatColor.RED + "Crée ton personnage d'abord.");
+                    yield true;
+                }
+                BankService.BankDef b = bank != null ? bank.findBankNear(player) : null;
+                if (b == null) {
+                    player.sendMessage(prefix + ChatColor.RED + "Va à une banque pour utiliser cette app.");
+                    yield true;
+                }
+                player.closeInventory();
+                bank.open(player, b, prefix);
                 yield true;
             }
             case APP_WALLET -> {
