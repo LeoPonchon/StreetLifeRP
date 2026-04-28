@@ -10,6 +10,8 @@ import org.shimakuro.streetLifeRP.chat.CharacterChatGateListener;
 import org.shimakuro.streetLifeRP.chat.ChatCommandBlockListener;
 import org.shimakuro.streetLifeRP.chat.ProximityChatListener;
 import org.shimakuro.streetLifeRP.core.StreetLifeRPContext;
+import org.shimakuro.streetLifeRP.core.command.RoleplayCommand;
+import org.shimakuro.streetLifeRP.core.command.StreetLifeRPCommand;
 import org.shimakuro.streetLifeRP.core.config.ConfigService;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
 import org.shimakuro.streetLifeRP.core.module.Module;
@@ -56,6 +58,8 @@ import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.economy.CashItemListener;
 import org.shimakuro.streetLifeRP.economy.CashItemService;
 import org.shimakuro.streetLifeRP.justice.PoliceInteractListener;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.TabCompleter;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class StreetLifeRP extends JavaPlugin {
@@ -463,6 +467,17 @@ public final class StreetLifeRP extends JavaPlugin {
 
             @Override
             public void enable() {
+                StreetLifeRPCommand streetLifeCommand = new StreetLifeRPCommand(context);
+                registerCommand("slrp", streetLifeCommand, streetLifeCommand);
+
+                RoleplayCommand roleplayCommand = new RoleplayCommand(context);
+                registerCommand("phone", roleplayCommand, null);
+                registerCommand("sms", roleplayCommand, null);
+                registerCommand("me", roleplayCommand, null);
+                registerCommand("do", roleplayCommand, null);
+                registerCommand("ooc", roleplayCommand, null);
+                registerCommand("twt", roleplayCommand, null);
+                registerCommand("call911", roleplayCommand, null);
                 // no-op: commandes désactivées (full interaction mode)
             }
 
@@ -474,6 +489,18 @@ public final class StreetLifeRP extends JavaPlugin {
 
         moduleManager.enableAll();
 
+    }
+
+    private void registerCommand(String name, CommandExecutor executor, TabCompleter tabCompleter) {
+        var command = getCommand(name);
+        if (command == null) {
+            getLogger().warning("Command not declared in plugin.yml: " + name);
+            return;
+        }
+        command.setExecutor(executor);
+        if (tabCompleter != null) {
+            command.setTabCompleter(tabCompleter);
+        }
     }
 
     @Override

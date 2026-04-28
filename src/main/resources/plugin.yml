@@ -5,6 +5,34 @@ api-version: '1.21'
 softdepend: [ProtocolLib]
 loadbefore: [Nexo, QualityArmory, QualityArmoryVehicles, QualityArmoryVehicles2]
 
+commands:
+  slrp:
+    description: Commandes StreetLifeRP
+    usage: /slrp
+    aliases: [streetliferp]
+  phone:
+    description: Affiche le numéro de téléphone RP
+    usage: /phone
+  sms:
+    description: Envoie un SMS RP
+    usage: /sms <joueur> <message>
+  me:
+    description: Action RP locale
+    usage: /me <action>
+  do:
+    description: Description RP locale
+    usage: /do <description>
+  ooc:
+    description: Message hors RP local
+    usage: /ooc <message>
+  twt:
+    description: Tweet RP global
+    usage: /twt <message>
+  call911:
+    description: Appel 911
+    usage: /911 <message>
+    aliases: ["911"]
+
 permissions:
   streetliferp.admin.reload:
     description: Permet de recharger StreetLifeRP
@@ -30,3 +58,21 @@ permissions:
   streetliferp.dispatch.receive:
     description: Reçoit les appels 911
     default: op
+  streetliferp.chat.sms:
+    description: Permet d'envoyer des SMS RP
+    default: true
+  streetliferp.chat.me:
+    description: Permet d'utiliser /me
+    default: true
+  streetliferp.chat.do:
+    description: Permet d'utiliser /do
+    default: true
+  streetliferp.chat.ooc:
+    description: Permet d'utiliser /ooc
+    default: true
+  streetliferp.chat.tweet:
+    description: Permet d'utiliser /twt
+    default: true
+  streetliferp.emergency.call:
+    description: Permet d'appeler le 911
+    default: true
