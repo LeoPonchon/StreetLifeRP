@@ -33,8 +33,17 @@ jobs:
   delivery:
     salary: 75.0
     cooldown_seconds: 300
+  baker:
+    salary: 85.0
+    cooldown_seconds: 300
   mechanic:
     salary: 90.0
+    cooldown_seconds: 300
+  dealer:
+    salary: 70.0
+    cooldown_seconds: 300
+  gunsmith:
+    salary: 95.0
     cooldown_seconds: 300
   police:
     salary: 110.0

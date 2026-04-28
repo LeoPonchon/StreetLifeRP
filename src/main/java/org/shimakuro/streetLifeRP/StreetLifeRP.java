@@ -11,6 +11,7 @@ import org.shimakuro.streetLifeRP.core.config.ConfigService;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
 import org.shimakuro.streetLifeRP.core.module.Module;
 import org.shimakuro.streetLifeRP.core.module.ModuleManager;
+import org.shimakuro.streetLifeRP.crafting.CraftingService;
 import org.shimakuro.streetLifeRP.data.PlayerDataListener;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
@@ -70,6 +71,7 @@ public final class StreetLifeRP extends JavaPlugin {
         PhoneItemService phoneItemService = new PhoneItemService(this);
         TradeService tradeService = new TradeService(this, auditLogService, playerDataRepository);
         GarageService garageService = new GarageService(this, playerDataRepository, antiAbuseService, economyService, auditLogService);
+        CraftingService craftingService = new CraftingService(this, jobService);
         PhoneMenuService phoneMenuService = new PhoneMenuService(
                 this,
                 configService,
@@ -313,6 +315,23 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void disable() {
                 // no-op
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
+                return "Crafting";
+            }
+
+            @Override
+            public void enable() {
+                craftingService.enable();
+                getServer().getPluginManager().registerEvents(craftingService, StreetLifeRP.this);
+            }
+
+            @Override
+            public void disable() {
+                craftingService.disable();
             }
         });
         moduleManager.register(new Module() {

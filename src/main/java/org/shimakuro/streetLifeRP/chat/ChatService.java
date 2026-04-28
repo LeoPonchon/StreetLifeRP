@@ -198,7 +198,10 @@ public final class ChatService {
         return switch (type) {
             case UNEMPLOYED -> "Chômeur";
             case DELIVERY -> "Livreur";
+            case BAKER -> "Boulanger";
             case MECHANIC -> "Mécano";
+            case DEALER -> "Dealer";
+            case GUNSMITH -> "Armurier";
             case POLICE -> "Police";
             case EMS -> "EMS";
             case ADMINPLUS -> "Admin+";
