@@ -87,7 +87,13 @@ public final class GuiInventoryMaskService {
 
     public void stopMask(Player player) {
         if (player == null) return;
-        states.remove(player.getUniqueId());
+        MaskState removed = states.remove(player.getUniqueId());
+        if (removed == null) return;
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (!player.isOnline()) return;
+            player.updateInventory();
+        });
     }
 
     private void maskWindowItems(PacketEvent event, MaskState state) {
@@ -129,4 +135,3 @@ public final class GuiInventoryMaskService {
 
     private record MaskState(int topSize) {}
 }
-
