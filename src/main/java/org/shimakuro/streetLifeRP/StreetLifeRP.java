@@ -19,6 +19,8 @@ import org.shimakuro.streetLifeRP.data.PlayerDataListener;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
 import org.shimakuro.streetLifeRP.ems.EmsService;
+import org.shimakuro.streetLifeRP.gui.GuiInventoryMaskListener;
+import org.shimakuro.streetLifeRP.gui.GuiInventoryMaskService;
 import org.shimakuro.streetLifeRP.health.UnconsciousListener;
 import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.health.UnconsciousMoveListener;
@@ -58,6 +60,7 @@ public final class StreetLifeRP extends JavaPlugin {
 
     private ModuleManager moduleManager;
     private StreetLifeRPContext context;
+    private GuiInventoryMaskService guiMask;
 
     @Override
     public void onEnable() {
@@ -286,6 +289,27 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void disable() {
                 // no-op
+            }
+        });
+        moduleManager.register(new Module() {
+            @Override
+            public String name() {
+                return "GuiMask";
+            }
+
+            @Override
+            public void enable() {
+                guiMask = new GuiInventoryMaskService(StreetLifeRP.this);
+                guiMask.enable();
+                getServer().getPluginManager().registerEvents(new GuiInventoryMaskListener(guiMask), StreetLifeRP.this);
+            }
+
+            @Override
+            public void disable() {
+                if (guiMask != null) {
+                    guiMask.disable();
+                    guiMask = null;
+                }
             }
         });
         moduleManager.register(new Module() {

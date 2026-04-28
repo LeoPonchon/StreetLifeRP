@@ -1,4 +1,6 @@
 org\shimakuro\streetLifeRP\health\UnconsciousMoveListener.class
+org\shimakuro\streetLifeRP\gui\GuiInventoryMaskListener.class
+org\shimakuro\streetLifeRP\gui\GuiInventoryMaskService$1.class
 org\shimakuro\streetLifeRP\bank\BankService.class
 org\shimakuro\streetLifeRP\bank\BankRobberyService$PendingLoot.class
 org\shimakuro\streetLifeRP\StreetLifeRP$7.class
@@ -36,6 +38,7 @@ org\shimakuro\streetLifeRP\items\SpecialItemService$1.class
 org\shimakuro\streetLifeRP\jobs\JobSalaryService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$Settings.class
 org\shimakuro\streetLifeRP\jobs\JobType.class
+org\shimakuro\streetLifeRP\StreetLifeRP$18.class
 org\shimakuro\streetLifeRP\data\PlayerData.class
 org\shimakuro\streetLifeRP\phone\PhoneSlotGuardListener.class
 org\shimakuro\streetLifeRP\chat\ProximityChatListener.class
@@ -76,6 +79,7 @@ org\shimakuro\streetLifeRP\phone\PhoneMenuService$AdminJobHolder.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$SmsHolder.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$DealerHolder.class
 org\shimakuro\streetLifeRP\bank\BankRobberyService.class
+org\shimakuro\streetLifeRP\gui\GuiInventoryMaskService$MaskState.class
 org\shimakuro\streetLifeRP\bank\BankService$BankHolder.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService$PhoneHolder.class
 org\shimakuro\streetLifeRP\antiabuse\AntiAbuseAction.class
@@ -99,6 +103,7 @@ org\shimakuro\streetLifeRP\phone\PhoneItemService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$CommandSenderMode.class
 org\shimakuro\streetLifeRP\core\log\AuditLogService.class
 org\shimakuro\streetLifeRP\phone\PhoneMenuService.class
+org\shimakuro\streetLifeRP\gui\GuiInventoryMaskService.class
 org\shimakuro\streetLifeRP\jobs\JobService.class
 org\shimakuro\streetLifeRP\justice\JusticeListener.class
 org\shimakuro\streetLifeRP\StreetLifeRP$9.class
