@@ -250,6 +250,6 @@ public final class CraftingService implements Listener {
     }
 
     private EnumSet<JobType> adminBypassJobs() {
-        return EnumSet.of(JobType.ADMINPLUS, JobType.ADMINMINUS);
+        return EnumSet.noneOf(JobType.class);
     }
 }

@@ -21,6 +21,7 @@ public final class BankListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() != Action.RIGHT_CLICK_BLOCK && event.getAction() != Action.RIGHT_CLICK_AIR) return;
+        if (event.getItem() != null && !event.getItem().getType().isAir()) return; // banque = main vide
         Player player = event.getPlayer();
         BankService.BankDef bank = ctx.bank().findBankNear(player);
         if (bank == null) return;
@@ -42,4 +43,3 @@ public final class BankListener implements Listener {
         ctx.bank().handleClick(player, clicked, ctx.config().prefix());
     }
 }
-

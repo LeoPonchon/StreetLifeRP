@@ -178,7 +178,17 @@ public final class PhoneMenuService {
         }
         inv.setItem(10, appItem(Material.WRITABLE_BOOK, ChatColor.AQUA + "SMS", List.of(ChatColor.GRAY + "Envoyer un message"), APP_SMS));
         inv.setItem(12, appItem(Material.EMERALD, ChatColor.GREEN + "Boutique", List.of(ChatColor.GRAY + "Ouvrir la boutique"), APP_SHOP));
-        inv.setItem(16, appItem(Material.LEATHER, ChatColor.GOLD + "Portefeuille", List.of(ChatColor.GRAY + "Voir cash + banque"), APP_WALLET));
+
+        ArrayList<String> walletLore = new ArrayList<>();
+        walletLore.add(ChatColor.GRAY + "Voir cash + banque");
+        if (bank != null) {
+            BankService.PendingRobberyView pending = bank.pendingRobbery(player.getUniqueId());
+            if (pending != null && pending.amountDirty() > 0.0) {
+                walletLore.add(ChatColor.DARK_RED + "Argent sale: " + ChatColor.RED + economy.format(pending.amountDirty()));
+                walletLore.add(ChatColor.GRAY + "Attente: " + ChatColor.WHITE + formatDuration(pending.remainingMillis()));
+            }
+        }
+        inv.setItem(16, appItem(Material.LEATHER, ChatColor.GOLD + "Portefeuille", walletLore, APP_WALLET));
         inv.setItem(20, appItem(Material.PAPER, ChatColor.GOLD + "Retirer cash", List.of(ChatColor.GRAY + "Créer un billet (item)"), APP_WITHDRAW_CASH));
         inv.setItem(22, appItem(Material.NAME_TAG, ChatColor.AQUA + "Identité", List.of(ChatColor.GRAY + "Donner une carte d'identité"), APP_ID_CARD));
         inv.setItem(24, appItem(Material.REDSTONE, ChatColor.RED + "911", List.of(ChatColor.GRAY + "Appel d'urgence"), APP_CALL_911));
@@ -466,6 +476,13 @@ public final class PhoneMenuService {
                 }
                 player.sendMessage(prefix + ChatColor.YELLOW + "Cash: " + ChatColor.GOLD + economy.format(data.cash()));
                 player.sendMessage(prefix + ChatColor.YELLOW + "Banque: " + ChatColor.GOLD + economy.format(data.bank()));
+                if (bank != null) {
+                    BankService.PendingRobberyView pending = bank.pendingRobbery(player.getUniqueId());
+                    if (pending != null && pending.amountDirty() > 0.0) {
+                        player.sendMessage(prefix + ChatColor.RED + "Argent sale: " + ChatColor.GOLD + economy.format(pending.amountDirty())
+                                + ChatColor.GRAY + " (attente " + ChatColor.WHITE + formatDuration(pending.remainingMillis()) + ChatColor.GRAY + ")");
+                    }
+                }
                 if (data.hasFine()) {
                     player.sendMessage(prefix + ChatColor.RED + "Amende: " + ChatColor.GOLD + economy.format(data.fineAmount())
                             + ChatColor.GRAY + " (" + (data.fineReason() != null ? data.fineReason() : "Amende") + ")");
@@ -583,6 +600,14 @@ public final class PhoneMenuService {
         return item;
     }
 
+    private String formatDuration(long millis) {
+        long totalSeconds = Math.max(0L, millis / 1000L);
+        long minutes = totalSeconds / 60L;
+        long seconds = totalSeconds % 60L;
+        if (minutes <= 0) return seconds + "s";
+        return minutes + "m" + (seconds < 10 ? "0" : "") + seconds + "s";
+    }
+
     private boolean isNearArmory(Player player) {
         ConfigurationSection section = config.raw().getConfigurationSection("armories");
         if (section == null) return false;
@@ -671,16 +696,18 @@ public final class PhoneMenuService {
     private String jobDisplayName(JobType job) {
         return switch (job) {
             case UNEMPLOYED -> "Sans emploi";
-            case DELIVERY -> "Livreur";
+            case TAXI -> "Taxi";
             case BAKER -> "Boulanger";
-            case RESTAURATEUR -> "Restauration";
+            case BAR -> "Bar";
+            case GROCERY -> "Supérette";
+            case LAWYER -> "Avocat";
+            case JOURNALIST -> "Journaliste";
+            case REAL_ESTATE -> "Immobilier";
             case MECHANIC -> "Mécanicien";
             case DEALER -> "Dealer";
             case STRIP_CLUB -> "Strip club";
             case POLICE -> "Police";
             case EMS -> "EMS";
-            case ADMINPLUS -> "Admin+";
-            case ADMINMINUS -> "Admin-";
         };
     }
 

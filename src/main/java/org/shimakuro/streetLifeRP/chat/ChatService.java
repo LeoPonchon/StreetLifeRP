@@ -197,16 +197,18 @@ public final class ChatService {
     private String jobLabel(JobType type) {
         return switch (type) {
             case UNEMPLOYED -> "Chômeur";
-            case DELIVERY -> "Livreur";
+            case TAXI -> "Taxi";
             case BAKER -> "Boulanger";
-            case RESTAURATEUR -> "Restauration";
+            case BAR -> "Bar";
+            case GROCERY -> "SupÃ©rette";
+            case LAWYER -> "Avocat";
+            case JOURNALIST -> "Journaliste";
+            case REAL_ESTATE -> "Immobilier";
             case MECHANIC -> "Mécano";
             case DEALER -> "Dealer";
             case STRIP_CLUB -> "Strip Club";
             case POLICE -> "Police";
             case EMS -> "EMS";
-            case ADMINPLUS -> "Admin+";
-            case ADMINMINUS -> "Admin-";
         };
     }
 

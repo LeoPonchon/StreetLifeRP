@@ -2,14 +2,16 @@ package org.shimakuro.streetLifeRP.jobs;
 
 public enum JobType {
     UNEMPLOYED,
-    DELIVERY,
+    TAXI,
     BAKER,
-    RESTAURATEUR,
+    BAR,
+    GROCERY,
+    LAWYER,
+    JOURNALIST,
+    REAL_ESTATE,
     MECHANIC,
     DEALER,
     STRIP_CLUB,
     POLICE,
-    EMS,
-    ADMINPLUS,
-    ADMINMINUS
+    EMS
 }

@@ -100,7 +100,9 @@ public final class BankRobberyService implements Runnable {
         }
 
         double ratio = takeRatio();
-        double take = round2(vault * ratio);
+        double initial = Math.max(0.0, bank.vaultInitial());
+        double perClick = round2(initial * ratio);
+        double take = round2(Math.min(vault, perClick));
         if (take <= 0.0) {
             player.sendMessage(prefix + ChatColor.DARK_GRAY + "Rien à voler.");
             return;
@@ -141,6 +143,15 @@ public final class BankRobberyService implements Runnable {
 
         target.sendMessage(prefix + ChatColor.RED + "Arrêté: argent du braquage confisqué et restitué à la banque.");
         audit.logSensitive("BANK_ROB_RESTITUTED bank=" + bankId + " robber=" + target.getUniqueId() + " amount=" + loot.amountStolen());
+    }
+
+    public PendingLootView pendingLoot(UUID uuid) {
+        if (uuid == null) return null;
+        PendingLoot loot = pending.get(uuid);
+        if (loot == null) return null;
+        long now = System.currentTimeMillis();
+        long remaining = Math.max(0L, loot.expiresAtMillis() - now);
+        return new PendingLootView(loot.amountStolen(), remaining, loot.bankName());
     }
 
     @Override
@@ -232,4 +243,6 @@ public final class BankRobberyService implements Runnable {
     }
 
     private record PendingLoot(double amountStolen, long expiresAtMillis, String bankId, String bankName) {}
+
+    public record PendingLootView(double amountStolen, long remainingMillis, String bankName) {}
 }

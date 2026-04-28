@@ -377,10 +377,8 @@ public final class StreetLifeRP extends JavaPlugin {
 
             @Override
             public void enable() {
-                // Avoid QAV2 persistence edge-cases after restarts (e.g. getting a placeable vehicle item / instant eject).
-                // Run both immediately and shortly after startup to catch vehicles spawned by QAV during its enable phase.
-                garageService.cleanupVehiclesOnStartup();
-                getServer().getScheduler().runTaskLater(StreetLifeRP.this, garageService::cleanupVehiclesOnStartup, 60L);
+                // Hard reset: wipe QAV2 saved vehicle state file on each (re)start.
+                garageService.wipeQav2VehicleDataFile();
                 getServer().getPluginManager().registerEvents(new GarageListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new FuelStationListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new VehicleBreakdownListener(context), StreetLifeRP.this);

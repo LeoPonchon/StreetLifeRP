@@ -25,6 +25,7 @@ org\shimakuro\streetLifeRP\vehicles\FuelStationListener.class
 org\shimakuro\streetLifeRP\economy\CashItemListener.class
 org\shimakuro\streetLifeRP\justice\CuffedRestrictionListener.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$VehicleDef.class
+org\shimakuro\streetLifeRP\bank\BankRobberyService$PendingLootView.class
 org\shimakuro\streetLifeRP\trade\TradeListener.class
 org\shimakuro\streetLifeRP\phone\PhoneService.class
 org\shimakuro\streetLifeRP\core\StreetLifeRPContext.class
@@ -85,6 +86,7 @@ org\shimakuro\streetLifeRP\trade\TradeService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService.class
 org\shimakuro\streetLifeRP\chat\CharacterChatGateListener.class
 org\shimakuro\streetLifeRP\StreetLifeRP$15.class
+org\shimakuro\streetLifeRP\bank\BankService$PendingRobberyView.class
 org\shimakuro\streetLifeRP\antiabuse\AntiAbuseService.class
 org\shimakuro\streetLifeRP\shops\ShopListener.class
 org\shimakuro\streetLifeRP\items\SpecialItemType.class

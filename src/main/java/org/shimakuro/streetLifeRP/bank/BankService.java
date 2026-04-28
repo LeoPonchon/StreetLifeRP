@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.UUID;
 
 public final class BankService {
     private static final String ACTION_DEPOSIT = "deposit";
@@ -157,6 +158,14 @@ public final class BankService {
         }
     }
 
+    public PendingRobberyView pendingRobbery(UUID uuid) {
+        BankRobberyService.PendingLootView view = robbery.pendingLoot(uuid);
+        if (view == null) return null;
+        return new PendingRobberyView(view.amountStolen(), view.remainingMillis(), view.bankName());
+    }
+
+    public record PendingRobberyView(double amountDirty, long remainingMillis, String bankName) {}
+
     private ItemStack actionItem(Material material, String name, List<String> lore, String action, String bankId) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
@@ -222,4 +231,3 @@ public final class BankService {
         }
     }
 }
-

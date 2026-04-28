@@ -21,6 +21,8 @@ import org.shimakuro.streetLifeRP.data.PlayerData;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -69,65 +71,24 @@ public final class GarageService {
     }
 
     /**
-     * Best-effort cleanup to avoid QAV2 vehicle persistence/ownership edge-cases after server restarts.
-     * - Removes any existing QAV2 vehicle entities in the world.
-     * - Clears stored active vehicle UUIDs in player data files.
+     * Simplest restart strategy: wipe QAV2's saved vehicle state file so no vehicles persist across restarts.
+     * Target: plugins/QualityArmoryVehicles2/vehicledata.yml
      */
-    public void cleanupVehiclesOnStartup() {
+    public void wipeQav2VehicleDataFile() {
         try {
-            playerData.clearAllActiveVehicleUuids();
-        } catch (Throwable ignored) {
-            // best effort
-        }
+            File pluginsDir = plugin.getDataFolder().getParentFile();
+            if (pluginsDir == null) return;
+            File vehicleData = new File(pluginsDir, "QualityArmoryVehicles2" + File.separator + "vehicledata.yml");
+            if (!vehicleData.exists()) return;
 
-        // Try to deconstruct vehicles without giving item stacks to players (player=null).
-        try {
-            for (Object vehicle : QavVehicleReflection.getAllVehicles()) {
-                if (vehicle == null) continue;
-                try {
-                    java.lang.reflect.Method isInvalid = vehicle.getClass().getMethod("isInvalid");
-                    Object inv = isInvalid.invoke(vehicle);
-                    if (inv instanceof Boolean b && b) continue;
-                } catch (Throwable ignored) {
-                    // best effort
-                }
-
-                boolean removed = false;
-                try {
-                    java.lang.reflect.Method deconstruct = vehicle.getClass().getMethod("deconstruct", Player.class, String.class);
-                    deconstruct.invoke(vehicle, null, "StreetLifeRP:startup_cleanup");
-                    removed = true;
-                } catch (NoSuchMethodException e) {
-                    try {
-                        java.lang.reflect.Method deconstruct = vehicle.getClass().getMethod("deconstruct", Player.class, String.class, boolean.class);
-                        deconstruct.invoke(vehicle, null, "StreetLifeRP:startup_cleanup", true);
-                        removed = true;
-                    } catch (Throwable ignored2) {
-                        // ignore
-                    }
-                } catch (Throwable ignored) {
-                    // ignore
-                }
-
-                if (removed) continue;
-
-                // Fallback: remove attached entities directly (prevents players interacting and receiving items).
-                try {
-                    java.lang.reflect.Method getEntities = vehicle.getClass().getMethod("getEntities");
-                    Object out = getEntities.invoke(vehicle);
-                    if (out instanceof java.util.Collection<?> entities) {
-                        for (Object e : entities) {
-                            if (e instanceof org.bukkit.entity.Entity be) {
-                                be.remove();
-                            }
-                        }
-                    }
-                } catch (Throwable ignored3) {
-                    // ignore
-                }
+            // Truncate file to empty content.
+            try (FileWriter w = new FileWriter(vehicleData, false)) {
+                w.write("");
             }
-        } catch (Throwable ignored) {
-            // QAV not installed or API changed; ignore
+
+            plugin.getLogger().warning("Wiped QAV2 vehicledata.yml to prevent vehicle persistence across restarts.");
+        } catch (Throwable t) {
+            plugin.getLogger().warning("Failed to wipe QAV2 vehicledata.yml: " + t.getClass().getSimpleName() + ": " + t.getMessage());
         }
     }
 
