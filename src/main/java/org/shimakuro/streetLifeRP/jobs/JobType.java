@@ -5,7 +5,6 @@ public enum JobType {
     TAXI,
     BAKER,
     BAR,
-    GROCERY,
     JOURNALIST,
     MECHANIC,
     DEALER,

@@ -10,28 +10,6 @@ commands:
     description: Commandes StreetLifeRP
     usage: /slrp
     aliases: [streetliferp]
-  phone:
-    description: Affiche le numéro de téléphone RP
-    usage: /phone
-  sms:
-    description: Envoie un SMS RP
-    usage: /sms <joueur> <message>
-  me:
-    description: Action RP locale
-    usage: /me <action>
-  do:
-    description: Description RP locale
-    usage: /do <description>
-  ooc:
-    description: Message hors RP local
-    usage: /ooc <message>
-  twt:
-    description: Tweet RP global
-    usage: /twt <message>
-  call911:
-    description: Appel 911
-    usage: /911 <message>
-    aliases: ["911"]
 
 permissions:
   streetliferp.admin.reload:
@@ -41,22 +19,22 @@ permissions:
     description: Permet de supprimer le personnage d'un joueur (admin)
     default: op
   streetliferp.admin.item.give:
-    description: Permet de donner des items spéciaux (admin)
+    description: Permet de donner des items spÃ©ciaux (admin)
     default: op
   streetliferp.admin.job.set:
-    description: Permet de changer son métier (admin)
+    description: Permet de changer son mÃ©tier (admin)
     default: op
   streetliferp.admin.cuff.toggle:
     description: Permet de toggle les menottes d'un joueur (admin)
     default: op
   streetliferp.police:
-    description: Accès aux commandes police
+    description: AccÃ¨s aux commandes police
     default: op
   streetliferp.ems:
-    description: Accès aux commandes EMS
+    description: AccÃ¨s aux commandes EMS
     default: op
   streetliferp.dispatch.receive:
-    description: Reçoit les appels 911
+    description: ReÃ§oit les appels 911
     default: op
   streetliferp.chat.sms:
     description: Permet d'envoyer des SMS RP

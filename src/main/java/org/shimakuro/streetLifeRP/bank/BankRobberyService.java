@@ -30,7 +30,7 @@ public final class BankRobberyService implements Runnable {
     private final JobService jobs;
     private final AuditLogService audit;
 
-    private final File file;
+    private final File stateFile;
     private final Map<String, Double> vaults = new HashMap<>();
     private final Map<UUID, PendingLoot> pending = new HashMap<>();
     private final Map<String, BankService.BankDef> bankDefs = new HashMap<>();
@@ -45,7 +45,7 @@ public final class BankRobberyService implements Runnable {
         this.economy = economy;
         this.jobs = jobs;
         this.audit = audit;
-        this.file = new File(plugin.getDataFolder(), "banks.yml");
+        this.stateFile = new File(plugin.getDataFolder(), "banks_state.yml");
     }
 
     public void enable() {
@@ -75,6 +75,26 @@ public final class BankRobberyService implements Runnable {
         if (bankId == null) return 0.0;
         return vaults.getOrDefault(bankId.toLowerCase(Locale.ROOT), 0.0);
     }
+
+    public RobberyStatusView robberyStatus(UUID playerUuid, String bankId) {
+        if (playerUuid == null || bankId == null) return null;
+        String id = bankId.toLowerCase(Locale.ROOT);
+        BankService.BankDef def = bankDefs.get(id);
+        if (def == null) return null;
+
+        double vault = vaults.getOrDefault(id, 0.0);
+        long now = System.currentTimeMillis();
+        long cd = clickCooldownMillis();
+        long last = lastRobAtMillis.computeIfAbsent(id, k -> new HashMap<>()).getOrDefault(playerUuid, 0L);
+        long remainingMillis = (last > 0 && now - last < cd) ? (cd - (now - last)) : 0L;
+
+        double ratio = takeRatio();
+        double perClick = round2(Math.max(0.0, def.vaultInitial()) * ratio);
+
+        return new RobberyStatusView(def.id(), def.name(), vault, perClick, remainingMillis);
+    }
+
+    public record RobberyStatusView(String bankId, String bankName, double vaultRemaining, double perClick, long cooldownRemainingMillis) {}
 
     public void tryRob(Player player, BankService.BankDef bank, String prefix) {
         if (player == null || bank == null) return;
@@ -193,20 +213,20 @@ public final class BankRobberyService implements Runnable {
     }
 
     private long clickCooldownMillis() {
-        long seconds = config.raw().getLong("banks.robbery.click_cooldown_seconds", 20L);
+        long seconds = config.banksRaw().getLong("banks.robbery.click_cooldown_seconds");
         return Math.max(1L, seconds) * 1000L;
     }
 
     private double takeRatio() {
-        double ratio = config.raw().getDouble("banks.robbery.take_ratio", 0.10);
-        if (ratio <= 0.0) return 0.10;
+        double ratio = config.banksRaw().getDouble("banks.robbery.take_ratio");
+        if (ratio <= 0.0) return 0.0;
         return Math.min(1.0, ratio);
     }
 
     private long escapeWindowMillis(double stolenTotal) {
-        double per1000 = config.raw().getDouble("banks.robbery.escape_minutes_per_1000_stolen", 1.0);
-        int min = config.raw().getInt("banks.robbery.min_escape_minutes", 1);
-        int max = config.raw().getInt("banks.robbery.max_escape_minutes", 30);
+        double per1000 = config.banksRaw().getDouble("banks.robbery.escape_minutes_per_1000_stolen");
+        int min = config.banksRaw().getInt("banks.robbery.min_escape_minutes");
+        int max = config.banksRaw().getInt("banks.robbery.max_escape_minutes");
         int minutes = (int) Math.ceil((stolenTotal / 1000.0) * per1000);
         if (minutes < min) minutes = min;
         if (minutes > max) minutes = max;
@@ -214,14 +234,28 @@ public final class BankRobberyService implements Runnable {
     }
 
     private void load() {
-        if (!file.exists()) return;
-        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
+        if (stateFile.exists()) {
+            YamlConfiguration cfg = YamlConfiguration.loadConfiguration(stateFile);
+            ConfigurationSection v = cfg.getConfigurationSection("vaults");
+            if (v != null) {
+                for (String key : v.getKeys(false)) {
+                    vaults.put(key.toLowerCase(Locale.ROOT), Math.max(0.0, v.getDouble(key, 0.0)));
+                }
+            }
+            return;
+        }
+
+        // Migration: older versions stored vaults in banks.yml.
+        File legacy = new File(plugin.getDataFolder(), "banks.yml");
+        if (!legacy.exists()) return;
+        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(legacy);
         ConfigurationSection v = cfg.getConfigurationSection("vaults");
         if (v != null) {
             for (String key : v.getKeys(false)) {
                 vaults.put(key.toLowerCase(Locale.ROOT), Math.max(0.0, v.getDouble(key, 0.0)));
             }
         }
+        save();
     }
 
     private void save() {
@@ -232,9 +266,9 @@ public final class BankRobberyService implements Runnable {
             cfg.set("vaults." + e.getKey(), e.getValue());
         }
         try {
-            cfg.save(file);
+            cfg.save(stateFile);
         } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Failed to save banks.yml", e);
+            plugin.getLogger().log(Level.SEVERE, "Failed to save banks_state.yml", e);
         }
     }
 

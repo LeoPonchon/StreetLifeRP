@@ -51,6 +51,7 @@ public final class JobSalaryService implements Runnable {
             if (!data.hasCharacter()) continue;
 
             JobType job = jobs.get(player.getUniqueId());
+            if (job == JobType.DEALER) continue;
             double salary = jobs.salary(job);
             if (salary == 0.0) continue;
 
@@ -70,8 +71,7 @@ public final class JobSalaryService implements Runnable {
             if (applied == 0.0) continue;
 
             String sign = applied < 0 ? "-" : "+";
-            player.sendMessage(prefix + ChatColor.DARK_GRAY + "Salaire (" + job.name() + "): " + sign + economy.format(Math.abs(applied)));
+            player.sendMessage(prefix + ChatColor.DARK_GRAY + "Salaire (" + jobs.displayName(job) + "): " + sign + economy.format(Math.abs(applied)));
         }
     }
 }
-

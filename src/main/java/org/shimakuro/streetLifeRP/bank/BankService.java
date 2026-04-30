@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
+import java.util.Comparator;
 
 public final class BankService {
     private static final String ACTION_DEPOSIT = "deposit";
@@ -162,6 +163,18 @@ public final class BankService {
         BankRobberyService.PendingLootView view = robbery.pendingLoot(uuid);
         if (view == null) return null;
         return new PendingRobberyView(view.amountStolen(), view.remainingMillis(), view.bankName());
+    }
+
+    public List<BankRobberyService.RobberyStatusView> robberyStatuses(Player player) {
+        if (player == null) return List.of();
+        if (banks.isEmpty()) return List.of();
+        ArrayList<BankRobberyService.RobberyStatusView> out = new ArrayList<>();
+        for (BankDef b : banks.values()) {
+            BankRobberyService.RobberyStatusView view = robbery.robberyStatus(player.getUniqueId(), b.id());
+            if (view != null) out.add(view);
+        }
+        out.sort(Comparator.comparing(BankRobberyService.RobberyStatusView::bankId));
+        return List.copyOf(out);
     }
 
     public record PendingRobberyView(double amountDirty, long remainingMillis, String bankName) {}

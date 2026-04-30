@@ -28,4 +28,3 @@ public final class PhoneMenuListener implements Listener {
         ctx.phoneMenu().handleClick(player, clicked, ctx.config().prefix());
     }
 }
-

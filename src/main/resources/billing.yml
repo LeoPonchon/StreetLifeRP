@@ -1,0 +1,44 @@
+billing:
+  tool:
+    material: PAPER
+    name: "&eFacture / Amende"
+    lore:
+      - "&7Clic droit sur un joueur"
+      - "&8Saisir un montant dans le chat"
+
+  # Par job, type de document créé par l'outil.
+  # values: fine|invoice
+  kind_by_job:
+    police: fine
+    taxi: invoice
+    baker: invoice
+    bar: invoice
+    mechanic: invoice
+    strip_club: invoice
+    ems: invoice
+    journalist: invoice
+    unemployed: invoice
+    dealer: invoice
+
+  invoice:
+    material: PAPER
+    title_fine: "Amende"
+    title_invoice: "Facture"
+    item_name: "&6%title%: &e%amount%"
+    item_lore:
+      - "&7Job: &f%job%"
+      - "&8Clic droit pour payer"
+
+  messages:
+    need_character: "Crée ton personnage d'abord."
+    target_no_character: "Ce joueur n'a pas de personnage."
+    too_far: "Trop loin."
+    prompt_amount: "Montant ? (ex: 250)"
+    invalid_amount: "Montant invalide."
+    sent: "Document envoyé."
+    received: "Tu as reçu un document à payer (clic droit)."
+    invalid_invoice: "Document invalide."
+    insufficient_funds: "Fonds insuffisants."
+    paid: "Payé."
+    got_paid: "Paiement reçu."
+    cant_drop: "Tu ne peux pas jeter une facture/amende."

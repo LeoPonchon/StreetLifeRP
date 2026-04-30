@@ -13,6 +13,14 @@ public final class ChatCommandBlockListener implements Listener {
     private static final Set<String> BLOCKED = Set.of(
             // Vanilla
             "me",
+            // StreetLifeRP (interaction-only)
+            "phone",
+            "sms",
+            "do",
+            "ooc",
+            "twt",
+            "call911",
+            "911",
             "msg", "tell", "w", "whisper",
             "r", "reply",
             "say",
@@ -50,9 +58,6 @@ public final class ChatCommandBlockListener implements Listener {
         int space = cmd.indexOf(' ');
         String label = (space == -1 ? cmd : cmd.substring(0, space)).toLowerCase();
 
-        // Allow SMS commands explicitly (only comms allowed besides local chat).
-        if (label.equals("sms") || label.endsWith(":sms")) return;
-
         String base = label;
         String namespace = null;
         int colon = base.indexOf(':');
@@ -66,6 +71,6 @@ public final class ChatCommandBlockListener implements Listener {
         if (!BLOCKED.contains(base) && (namespace == null || !BLOCKED.contains(namespace))) return;
 
         event.setCancelled(true);
-        event.getPlayer().sendMessage(ctx.config().prefix() + ChatColor.RED + "Commande désactivée: utilisez les SMS ou le chat local.");
+        event.getPlayer().sendMessage(ctx.config().prefix() + ChatColor.RED + "Commande désactivée: utilisez le téléphone ou le chat local.");
     }
 }

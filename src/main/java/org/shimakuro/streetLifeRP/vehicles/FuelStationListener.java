@@ -54,15 +54,15 @@ public final class FuelStationListener implements Listener {
     }
 
     private int maxFuel() {
-        return ctx.config().raw().getInt("vehicles.fuel.max", 10000);
+        return ctx.config().vehiclesRaw().getInt("vehicles.fuel.max");
     }
 
     private double pricePerUnit() {
-        return ctx.config().raw().getDouble("vehicles.fuel.price_per_unit", 6.0);
+        return ctx.config().vehiclesRaw().getDouble("vehicles.fuel.price_per_unit");
     }
 
     private boolean isNearFuelStation(Location loc) {
-        ConfigurationSection section = ctx.config().raw().getConfigurationSection("vehicles.fuel_stations.list");
+        ConfigurationSection section = ctx.config().vehiclesRaw().getConfigurationSection("vehicles.fuel_stations.list");
         if (section == null) return false;
         String world = (loc.getWorld() != null) ? loc.getWorld().getName() : "world";
 
@@ -71,12 +71,13 @@ public final class FuelStationListener implements Listener {
             if (s == null) continue;
             ConfigurationSection t = s.getConfigurationSection("terminal");
             if (t == null) continue;
-            String w = t.getString("world", "world");
+            String w = t.getString("world");
+            if (w == null || w.isBlank()) continue;
             if (!world.equalsIgnoreCase(w)) continue;
-            double x = t.getDouble("x", 0.0);
-            double y = t.getDouble("y", 64.0);
-            double z = t.getDouble("z", 0.0);
-            double radius = t.getDouble("radius", 4.0);
+            double x = t.getDouble("x");
+            double y = t.getDouble("y");
+            double z = t.getDouble("z");
+            double radius = t.getDouble("radius");
 
             double dx = Math.abs(loc.getX() - x);
             double dy = Math.abs(loc.getY() - y);
@@ -86,4 +87,3 @@ public final class FuelStationListener implements Listener {
         return false;
     }
 }
-

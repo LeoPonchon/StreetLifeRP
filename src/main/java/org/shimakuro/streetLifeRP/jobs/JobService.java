@@ -21,7 +21,9 @@ public final class JobService {
             ConfigurationSection s = section != null ? section.getConfigurationSection(type.name().toLowerCase()) : null;
             double salary = s != null ? s.getDouble("salary", 0.0) : 0.0;
             long cooldownSeconds = s != null ? s.getLong("cooldown_seconds", 300L) : 300L;
-            next.put(type, new JobConfig(salary, cooldownSeconds));
+            String displayName = s != null ? s.getString("display_name") : null;
+            if (displayName == null) displayName = type.name();
+            next.put(type, new JobConfig(salary, cooldownSeconds, displayName));
         }
         jobConfigs = next;
     }
@@ -43,12 +45,16 @@ public final class JobService {
     }
 
     public double salary(JobType type) {
-        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L)).salary();
+        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L, type.name())).salary();
     }
 
     public long cooldownSeconds(JobType type) {
-        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L)).cooldownSeconds();
+        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L, type.name())).cooldownSeconds();
     }
 
-    private record JobConfig(double salary, long cooldownSeconds) {}
+    public String displayName(JobType type) {
+        return jobConfigs.getOrDefault(type, new JobConfig(0.0, 300L, type.name())).displayName();
+    }
+
+    private record JobConfig(double salary, long cooldownSeconds, String displayName) {}
 }

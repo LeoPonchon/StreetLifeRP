@@ -1,0 +1,4 @@
+economy:
+  currency_symbol: "$"
+  starting_cash: 500.0
+  starting_bank: 0.0

@@ -118,8 +118,8 @@ public final class VehicleBreakdownListener implements Listener {
     }
 
     private int breakdownImpactsThreshold() {
-        ConfigurationSection section = ctx.config().raw().getConfigurationSection("vehicles.mechanic");
+        ConfigurationSection section = ctx.config().vehiclesRaw().getConfigurationSection("vehicles.mechanic");
         if (section == null) return 0;
-        return section.getInt("breakdown_impacts", 0);
+        return section.getInt("breakdown_impacts");
     }
 }

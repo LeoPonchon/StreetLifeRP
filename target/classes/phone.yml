@@ -1,0 +1,59 @@
+phone:
+  menu:
+    # Titre du menu principal (peut contenir des glyphs Nexo)
+    title: "&f<shift:-8><glyph:streetliferp_phone>"
+
+  titles:
+    socials: "&bRéseaux sociaux"
+    sms_contacts: "&bSMS - Choisir joueur"
+    gps_menu: "&aGPS - Menu"
+    gps_places: "&aGPS - Lieux importants"
+    gps_players: "&aGPS - Envoyer position"
+    character_create: "&dPersonnage - Création"
+
+  apps:
+    character_create:
+      item_name: "&dCréer personnage"
+      item_lore:
+        - "&7Aucun personnage détecté"
+        - "&8Clique pour commencer"
+
+  job_book:
+    item_name: "&3Infos métier"
+    item_lore:
+      - "&8Clique pour ouvrir"
+    title: "Infos métier"
+    author: "StreetLifeRP"
+    jobs:
+      unemployed:
+        pages:
+          - "&8&lSans emploi\n\n&8Tu n'as pas de job.\n\n&8Demande à un admin pour être assigné à un métier."
+      taxi:
+        pages:
+          - "&8&lTaxi\n\n&8Objectif:\n&7- Transporter des joueurs\n\n&8Astuce:\n&7- Reste en ville pour être dispo."
+      baker:
+        pages:
+          - "&8&lBoulanger\n\n&8Objectif:\n&7- Produire/vendre de la nourriture\n\n&8Astuce:\n&7- Prépare du stock avant l'affluence."
+          - "&8&lRecettes (table de craft)\n\n&8Shapeless:\n&7- Pain au chocolat:\n&7  BREAD + COCOA_BEANS\n\n&7- Sandwich:\n&7  BREAD + COOKED_BEEF + MILK_BUCKET\n\n&7- Café serré:\n&7  COCOA_BEANS + SUGAR + GLASS_BOTTLE"
+      mechanic:
+        pages:
+          - "&8&lMécanicien\n\n&8Objectif:\n&7- Réparer/assister sur les véhicules\n\n&8Astuce:\n&7- Garde des kits de réparation."
+          - "&8&lRecette: Kit de réparation\n\n&8Station: Table de craft (3x3)\n\n&7[I][R][I]\n&7[R][L][R]\n&7[I][R][I]\n\n&8I=&7IRON_INGOT\n&8R=&7REDSTONE\n&8L=&7LEVER"
+      dealer:
+        pages:
+          - "&8&lDealer\n\n&8Objectif:\n&7- Commerce illégal\n\n&8Attention:\n&7- Risque Police / perquisitions."
+          - "&8&lRecettes (table de craft)\n\n&8Shapeless:\n&7- Drogue de synthèse:\n&7  SUGAR + REDSTONE + GLOWSTONE_DUST + GLASS_BOTTLE\n\n&7- Space cookie:\n&7  COCOA_BEANS + WHEAT + SUGAR + FERN"
+      police:
+        pages:
+          - "&8&lPolice\n\n&8Objectif:\n&7- Maintenir l'ordre\n\n&8Outils:\n&7- Kit Police dans le téléphone."
+      ems:
+        pages:
+          - "&8&lEMS\n\n&8Objectif:\n&7- Soigner / réanimer\n\n&8Outils:\n&7- Kit EMS dans le téléphone."
+
+    billing:
+      pages:
+        - "&8&lFactures / Amendes\n\n&8Outil:\n&7- Outils métier -> Facture/Amende\n\n&8Usage:\n&7- Clic droit sur un joueur\n&7- Écris un montant dans le chat\n&7- Le joueur reçoit un papier\n\n&8Paiement:\n&7- Le joueur fait clic droit avec le papier\n&7- Le montant est retiré de son cash\n&7- Et donné à l'émetteur"
+
+  gps:
+    # Liste des lieux importants affichés dans GPS -> Lieux importants.
+    places: []

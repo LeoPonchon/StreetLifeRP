@@ -29,7 +29,7 @@ public final class ArmoryInteractListener implements Listener {
         Player player = event.getPlayer();
         if (!isNearArmory(player)) return;
 
-        ConfigurationSection armorySection = ctx.config().raw().getConfigurationSection("armory_shop");
+        ConfigurationSection armorySection = ctx.config().shopsRaw().getConfigurationSection("armory_shop");
         if (armorySection == null) return;
 
         event.setCancelled(true);
@@ -37,7 +37,7 @@ public final class ArmoryInteractListener implements Listener {
     }
 
     private boolean isNearArmory(Player player) {
-        ConfigurationSection section = ctx.config().raw().getConfigurationSection("armories");
+        ConfigurationSection section = ctx.config().armoriesRaw().getConfigurationSection("armories");
         if (section == null) return false;
         ConfigurationSection all = section.getConfigurationSection("list");
         if (all == null) return false;
@@ -50,7 +50,8 @@ public final class ArmoryInteractListener implements Listener {
             if (a == null) continue;
             ConfigurationSection t = a.getConfigurationSection("terminal");
             if (t == null) continue;
-            String w = t.getString("world", "world");
+            String w = t.getString("world");
+            if (w == null || w.isBlank()) continue;
             if (!world.equalsIgnoreCase(w)) continue;
 
             if (!t.contains("x1") || !t.contains("y1") || !t.contains("z1")

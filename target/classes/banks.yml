@@ -1,0 +1,19 @@
+banks:
+  robbery:
+    click_cooldown_seconds: 20
+    take_ratio: 0.10
+    escape_minutes_per_1000_stolen: 1.0
+    min_escape_minutes: 1
+    max_escape_minutes: 30
+  list:
+    central:
+      name: "&eBanque Centrale"
+      terminal:
+        world: "world"
+        x1: -516.0
+        y1: 71.0
+        z1: 358.0
+        x2: -523.0
+        y2: 71.0
+        z2: 351.0
+      vault_initial: 50000.0

@@ -180,7 +180,7 @@ public final class ChatService {
         String out = pattern;
         out = out.replace("%name%", name);
         out = out.replace("%mcname%", name);
-        out = out.replace("%job%", jobLabel(job));
+        out = out.replace("%job%", jobs.displayName(job));
         out = out.replace("%message%", message);
         out = out.replace("%world%", loc.getWorld() != null ? loc.getWorld().getName() : "world");
         out = out.replace("%x%", Integer.toString(loc.getBlockX()));
@@ -200,7 +200,6 @@ public final class ChatService {
             case TAXI -> "Taxi";
             case BAKER -> "Boulanger";
             case BAR -> "Bar";
-            case GROCERY -> "SupÃ©rette";
             case JOURNALIST -> "Journaliste";
             case MECHANIC -> "Mécano";
             case DEALER -> "Dealer";

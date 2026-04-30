@@ -3,12 +3,13 @@ C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\antia
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\bank\BankListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\bank\BankRobberyService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\bank\BankService.java
+C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\billing\BillingListener.java
+C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\billing\BillingService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\characters\CharacterService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\chat\CharacterChatGateListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\chat\ChatCommandBlockListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\chat\ChatService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\chat\ProximityChatListener.java
-C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\core\command\RoleplayCommand.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\core\command\StreetLifeRPCommand.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\core\config\ConfigService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\core\log\AuditLogService.java
@@ -23,8 +24,6 @@ C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\econo
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\economy\CashItemService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\economy\EconomyService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\ems\EmsService.java
-C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\gui\GuiInventoryMaskListener.java
-C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\gui\GuiInventoryMaskService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\health\UnconsciousListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\health\UnconsciousMoveListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\health\UnconsciousPoseService.java
@@ -32,6 +31,7 @@ C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\healt
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\identity\IdentityService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\input\InputListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\input\InputService.java
+C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\items\KeyItemGuardListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\items\SpecialItemListener.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\items\SpecialItemService.java
 C:\Users\leo\Desktop\StreetLifeRP\src\main\java\org\shimakuro\streetLifeRP\items\SpecialItemType.java

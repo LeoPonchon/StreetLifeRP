@@ -1,0 +1,41 @@
+jobs:
+  unemployed:
+    salary: 0.0
+    cooldown_seconds: 300
+    display_name: "Sans emploi"
+  taxi:
+    salary: 75.0
+    cooldown_seconds: 300
+    display_name: "Taxi"
+  baker:
+    salary: 85.0
+    cooldown_seconds: 300
+    display_name: "Boulanger"
+  bar:
+    salary: 90.0
+    cooldown_seconds: 300
+    display_name: "Bar"
+  journalist:
+    salary: 85.0
+    cooldown_seconds: 300
+    display_name: "Journaliste"
+  mechanic:
+    salary: 90.0
+    cooldown_seconds: 300
+    display_name: "Mécanicien"
+  dealer:
+    salary: 70.0
+    cooldown_seconds: 300
+    display_name: "Criminel"
+  strip_club:
+    salary: 85.0
+    cooldown_seconds: 300
+    display_name: "Strip club"
+  police:
+    salary: 110.0
+    cooldown_seconds: 300
+    display_name: "Police"
+  ems:
+    salary: 110.0
+    cooldown_seconds: 300
+    display_name: "Médecin"

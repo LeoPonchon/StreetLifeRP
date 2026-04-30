@@ -10,7 +10,6 @@ import org.shimakuro.streetLifeRP.chat.CharacterChatGateListener;
 import org.shimakuro.streetLifeRP.chat.ChatCommandBlockListener;
 import org.shimakuro.streetLifeRP.chat.ProximityChatListener;
 import org.shimakuro.streetLifeRP.core.StreetLifeRPContext;
-import org.shimakuro.streetLifeRP.core.command.RoleplayCommand;
 import org.shimakuro.streetLifeRP.core.command.StreetLifeRPCommand;
 import org.shimakuro.streetLifeRP.core.config.ConfigService;
 import org.shimakuro.streetLifeRP.core.log.AuditLogService;
@@ -21,13 +20,14 @@ import org.shimakuro.streetLifeRP.data.PlayerDataListener;
 import org.shimakuro.streetLifeRP.data.PlayerDataRepository;
 import org.shimakuro.streetLifeRP.economy.EconomyService;
 import org.shimakuro.streetLifeRP.ems.EmsService;
-import org.shimakuro.streetLifeRP.gui.GuiInventoryMaskListener;
-import org.shimakuro.streetLifeRP.gui.GuiInventoryMaskService;
 import org.shimakuro.streetLifeRP.health.UnconsciousListener;
 import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.health.UnconsciousMoveListener;
 import org.shimakuro.streetLifeRP.items.SpecialItemListener;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
+import org.shimakuro.streetLifeRP.items.KeyItemGuardListener;
+import org.shimakuro.streetLifeRP.billing.BillingListener;
+import org.shimakuro.streetLifeRP.billing.BillingService;
 import org.shimakuro.streetLifeRP.identity.IdentityService;
 import org.shimakuro.streetLifeRP.jobs.JobService;
 import org.shimakuro.streetLifeRP.jobs.JobSalaryService;
@@ -66,7 +66,6 @@ public final class StreetLifeRP extends JavaPlugin {
 
     private ModuleManager moduleManager;
     private StreetLifeRPContext context;
-    private GuiInventoryMaskService guiMask;
 
     @Override
     public void onEnable() {
@@ -86,6 +85,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 (target, cuffed) -> bankRobberyService.onCuffed(target, cuffed, configService.prefix()));
         ChatService chatService = new ChatService(playerDataRepository, jobService, antiAbuseService, auditLogService);
         SpecialItemService itemService = new SpecialItemService(this);
+        BillingService billingService = new BillingService(this, configService, economyService);
         PhoneService phoneService = new PhoneService(playerDataRepository, antiAbuseService, auditLogService);
         InputService inputService = new InputService(this);
         CashItemService cashItemService = new CashItemService(this);
@@ -115,7 +115,8 @@ public final class StreetLifeRP extends JavaPlugin {
                 itemService,
                 garageService,
                 bankService,
-                unconsciousService
+                unconsciousService,
+                billingService
         );
 
         this.context = new StreetLifeRPContext(
@@ -141,7 +142,8 @@ public final class StreetLifeRP extends JavaPlugin {
                 inputService,
                 cashItemService,
                 tradeService,
-                garageService
+                garageService,
+                billingService
         );
 
         this.moduleManager = new ModuleManager(getLogger());
@@ -308,32 +310,13 @@ public final class StreetLifeRP extends JavaPlugin {
             @Override
             public void enable() {
                 getServer().getPluginManager().registerEvents(new SpecialItemListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new BillingListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new KeyItemGuardListener(context), StreetLifeRP.this);
             }
 
             @Override
             public void disable() {
                 // no-op
-            }
-        });
-        moduleManager.register(new Module() {
-            @Override
-            public String name() {
-                return "GuiMask";
-            }
-
-            @Override
-            public void enable() {
-                guiMask = new GuiInventoryMaskService(StreetLifeRP.this);
-                guiMask.enable();
-                getServer().getPluginManager().registerEvents(new GuiInventoryMaskListener(guiMask), StreetLifeRP.this);
-            }
-
-            @Override
-            public void disable() {
-                if (guiMask != null) {
-                    guiMask.disable();
-                    guiMask = null;
-                }
             }
         });
         moduleManager.register(new Module() {
@@ -470,14 +453,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 StreetLifeRPCommand streetLifeCommand = new StreetLifeRPCommand(context);
                 registerCommand("slrp", streetLifeCommand, streetLifeCommand);
 
-                RoleplayCommand roleplayCommand = new RoleplayCommand(context);
-                registerCommand("phone", roleplayCommand, null);
-                registerCommand("sms", roleplayCommand, null);
-                registerCommand("me", roleplayCommand, null);
-                registerCommand("do", roleplayCommand, null);
-                registerCommand("ooc", roleplayCommand, null);
-                registerCommand("twt", roleplayCommand, null);
-                registerCommand("call911", roleplayCommand, null);
+
                 // no-op: commandes désactivées (full interaction mode)
             }
 

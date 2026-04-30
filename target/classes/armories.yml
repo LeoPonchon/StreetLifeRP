@@ -1,0 +1,12 @@
+armories:
+  list:
+    central:
+      name: "&8Armurerie"
+      terminal:
+        world: "world"
+        x1: -496.0
+        y1: 72.0
+        z1: 372.0
+        x2: -502.0
+        y2: 72.0
+        z2: 366.0

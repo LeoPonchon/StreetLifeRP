@@ -1,0 +1,52 @@
+shop:
+  title: "&aBoutique"
+  items:
+    bread:
+      name: "&fPain (x8)"
+      material: BREAD
+      amount: 8
+      price: 40.0
+      slot: 11
+    steak:
+      name: "&cSteak (x4)"
+      material: COOKED_BEEF
+      amount: 4
+      price: 65.0
+      slot: 13
+    bandage:
+      name: "&eBandage"
+      material: PAPER
+      amount: 1
+      price: 120.0
+      slot: 15
+
+armory_shop:
+  title: "&8Armurerie"
+  items:
+    m16:
+      name: "&8M16"
+      qa_item: "m16"
+      material: CROSSBOW
+      amount: 1
+      price: 3600.0
+      slot: 11
+      give_command: "qa give m16 %player%"
+      command_sender: "console"
+    remington:
+      name: "&8Remington"
+      qa_item: "remington"
+      material: CROSSBOW
+      amount: 1
+      price: 2500.0
+      slot: 13
+      give_command: "qa give remington %player%"
+      command_sender: "console"
+    ammo_556:
+      name: "&8Munitions 5.56"
+      qa_item: "556"
+      material: PHANTOM_MEMBRANE
+      amount: 16
+      price: 120.0
+      slot: 15
+      give_command: "qa give 556 %player% 16"
+      command_sender: "console"

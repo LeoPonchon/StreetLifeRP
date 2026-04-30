@@ -1,0 +1,18 @@
+antiabuse:
+  cooldowns_seconds:
+    money_transfer: 2
+    bank_deposit: 2
+    bank_withdraw: 2
+    shop_buy: 1
+    fine_pay: 2
+    theft: 2
+    storage: 2
+    chat_me: 1
+    chat_do: 1
+    chat_ooc: 1
+    chat_tweet: 3
+    phone_sms: 2
+    cash_redeem: 1
+    emergency_call: 5
+    vehicle_spawn: 3
+    vehicle_buy: 2

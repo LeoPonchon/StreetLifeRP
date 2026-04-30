@@ -22,6 +22,7 @@ import org.shimakuro.streetLifeRP.input.InputService;
 import org.shimakuro.streetLifeRP.economy.CashItemService;
 import org.shimakuro.streetLifeRP.trade.TradeService;
 import org.shimakuro.streetLifeRP.vehicles.GarageService;
+import org.shimakuro.streetLifeRP.billing.BillingService;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public final class StreetLifeRPContext {
@@ -48,6 +49,7 @@ public final class StreetLifeRPContext {
     private final CashItemService cashItems;
     private final TradeService trade;
     private final GarageService garage;
+    private final BillingService billing;
 
     public StreetLifeRPContext(
             JavaPlugin plugin,
@@ -72,7 +74,8 @@ public final class StreetLifeRPContext {
             InputService input,
             CashItemService cashItems,
             TradeService trade,
-            GarageService garage
+            GarageService garage,
+            BillingService billing
     ) {
         this.plugin = plugin;
         this.config = config;
@@ -97,6 +100,7 @@ public final class StreetLifeRPContext {
         this.cashItems = cashItems;
         this.trade = trade;
         this.garage = garage;
+        this.billing = billing;
     }
 
     public JavaPlugin plugin() {
@@ -191,13 +195,17 @@ public final class StreetLifeRPContext {
         return garage;
     }
 
+    public BillingService billing() {
+        return billing;
+    }
+
     public void reloadAll() {
         config.reload();
-        antiAbuse.reloadFromConfig(config.raw().getConfigurationSection("antiabuse.cooldowns_seconds"));
-        jobs.reloadFromConfig(config.raw().getConfigurationSection("jobs"));
-        justice.reloadFromConfig(config.raw().getConfigurationSection("justice"));
-        chat.reloadFromConfig(config.raw().getConfigurationSection("chat"));
-        bank.reloadFromConfig(config.raw().getConfigurationSection("banks"));
-        garage.reloadFromConfig(config.raw().getConfigurationSection("vehicles"));
+        antiAbuse.reloadFromConfig(config.antiAbuseRaw().getConfigurationSection("antiabuse.cooldowns_seconds"));
+        jobs.reloadFromConfig(config.jobsRaw().getConfigurationSection("jobs"));
+        justice.reloadFromConfig(config.justiceRaw().getConfigurationSection("justice"));
+        chat.reloadFromConfig(config.chatRaw().getConfigurationSection("chat"));
+        bank.reloadFromConfig(config.banksRaw().getConfigurationSection("banks"));
+        garage.reloadFromConfig(config.vehiclesRaw().getConfigurationSection("vehicles"));
     }
 }
