@@ -65,8 +65,17 @@ public final class BankRobberyService implements Runnable {
     public void ensureBanksKnown(Collection<BankService.BankDef> defs) {
         bankDefs.clear();
         for (BankService.BankDef d : defs) {
-            bankDefs.put(d.id().toLowerCase(Locale.ROOT), d);
-            vaults.putIfAbsent(d.id().toLowerCase(Locale.ROOT), Math.max(0.0, d.vaultInitial()));
+            String id = d.id().toLowerCase(Locale.ROOT);
+            bankDefs.put(id, d);
+
+            double initial = Math.max(0.0, d.vaultInitial());
+            Double existing = vaults.get(id);
+            if (existing == null) {
+                vaults.put(id, initial);
+            } else if (existing > initial) {
+                // If config lowered the configured vault size, clamp any persisted state down to it.
+                vaults.put(id, initial);
+            }
         }
         save();
     }

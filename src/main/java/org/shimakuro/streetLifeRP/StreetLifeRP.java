@@ -23,6 +23,7 @@ import org.shimakuro.streetLifeRP.ems.EmsService;
 import org.shimakuro.streetLifeRP.health.UnconsciousListener;
 import org.shimakuro.streetLifeRP.health.UnconsciousService;
 import org.shimakuro.streetLifeRP.health.UnconsciousMoveListener;
+import org.shimakuro.streetLifeRP.health.UnconsciousRestrictionListener;
 import org.shimakuro.streetLifeRP.items.SpecialItemListener;
 import org.shimakuro.streetLifeRP.items.SpecialItemService;
 import org.shimakuro.streetLifeRP.items.KeyItemGuardListener;
@@ -348,6 +349,7 @@ public final class StreetLifeRP extends JavaPlugin {
                 unconsciousService.enable();
                 getServer().getPluginManager().registerEvents(new UnconsciousListener(context), StreetLifeRP.this);
                 getServer().getPluginManager().registerEvents(new UnconsciousMoveListener(context), StreetLifeRP.this);
+                getServer().getPluginManager().registerEvents(new UnconsciousRestrictionListener(context), StreetLifeRP.this);
             }
 
             @Override

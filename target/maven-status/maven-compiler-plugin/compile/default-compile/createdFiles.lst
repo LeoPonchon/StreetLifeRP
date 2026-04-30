@@ -39,6 +39,7 @@ org\shimakuro\streetLifeRP\trade\TradeListener.class
 org\shimakuro\streetLifeRP\phone\PhoneService.class
 org\shimakuro\streetLifeRP\core\StreetLifeRPContext.class
 org\shimakuro\streetLifeRP\vehicles\GarageListener.class
+org\shimakuro\streetLifeRP\health\UnconsciousRestrictionListener.class
 org\shimakuro\streetLifeRP\items\SpecialItemService$1.class
 org\shimakuro\streetLifeRP\jobs\JobSalaryService.class
 org\shimakuro\streetLifeRP\vehicles\GarageService$Settings.class

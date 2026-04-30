@@ -64,6 +64,12 @@ public final class BillingListener implements Listener {
                 return;
             }
 
+            double max = ctx.config().billingRaw().getDouble("billing.invoice.max_amount", 0.0);
+            if (max > 0.0 && amount > max) {
+                p.sendMessage(ctx.config().prefix() + ChatColor.RED + msg("billing.messages.amount_too_high", ctx.economy().format(max)));
+                return;
+            }
+
             UUID issuer = p.getUniqueId();
             var job = ctx.jobs().get(issuer);
             ItemStack invoice = ctx.billing().createInvoice(issuer, job, amount);
@@ -128,6 +134,13 @@ public final class BillingListener implements Listener {
     private String msg(String path) {
         String raw = ctx.config().billingRaw().getString(path);
         if (raw == null) return "";
+        return ChatColor.translateAlternateColorCodes('&', raw);
+    }
+
+    private String msg(String path, String maxFormatted) {
+        String raw = ctx.config().billingRaw().getString(path);
+        if (raw == null) return "";
+        raw = raw.replace("%max%", maxFormatted != null ? maxFormatted : "");
         return ChatColor.translateAlternateColorCodes('&', raw);
     }
 

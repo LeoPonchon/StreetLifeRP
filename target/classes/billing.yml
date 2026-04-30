@@ -22,6 +22,8 @@ billing:
 
   invoice:
     material: PAPER
+    # 0 = pas de limite
+    max_amount: 10000.0
     title_fine: "Amende"
     title_invoice: "Facture"
     item_name: "&6%title%: &e%amount%"
@@ -35,6 +37,7 @@ billing:
     too_far: "Trop loin."
     prompt_amount: "Montant ? (ex: 250)"
     invalid_amount: "Montant invalide."
+    amount_too_high: "Montant trop élevé (max: %max%)."
     sent: "Document envoyé."
     received: "Tu as reçu un document à payer (clic droit)."
     invalid_invoice: "Document invalide."

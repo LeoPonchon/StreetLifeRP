@@ -15,6 +15,9 @@ vehicles:
   mechanic:
     breakdown_impacts: 8
   require_ownership: true
+  # Donnés automatiquement à un joueur n'ayant encore aucun véhicule.
+  # Laisse vide si tu veux forcer l'achat via le concessionnaire.
+  default_owned: []
   provider:
     # Commande pour spawn le véhicule (ex: QAV2).
     # Variables: %vehicle%, %player%, %world%, %x%, %y%, %z%
@@ -35,15 +38,196 @@ vehicles:
       spawn:
         # Le joueur doit être près de ce point pour sortir un véhicule.
         world: "world"
-        x: 2.0
-        y: 64.0
-        z: 2.0
+        x: -506.5
+        y: 72.0
+        z: 378.5
         radius: 3.0
         yaw: 0.0
         pitch: 0.0
   catalog:
-    demo_car:
-      name: "&fVéhicule démo"
-      vehicle_id: "demo_car"
+    # IMPORTANT: `vehicle_id` doit correspondre EXACTEMENT au `name:` dans les .yml de QAV2.
+    ambulance:
+      name: "&fAmbulance"
+      vehicle_id: "ambulance"
+      price: 5000.0
+      icon: MINECART
+    b2:
+      name: "&fB-2 Stealth Bomber"
+      vehicle_id: "b2"
+      price: 5000.0
+      icon: MINECART
+    bmw:
+      name: "&fBMW"
+      vehicle_id: "bmw"
+      price: 5000.0
+      icon: MINECART
+    bumpercar_red:
+      name: "&fBumperCar"
+      vehicle_id: "bumpercar_red"
+      price: 5000.0
+      icon: MINECART
+    bus:
+      name: "&fCity bus"
+      vehicle_id: "bus"
+      price: 5000.0
+      icon: MINECART
+    cadillac62:
+      name: "&fCadillac-Series62"
+      vehicle_id: "cadillac62"
+      price: 5000.0
+      icon: MINECART
+    falconhelicopter:
+      name: "&fUH-144 Falcon"
+      vehicle_id: "falconhelicopter"
+      price: 5000.0
+      icon: MINECART
+    firetruck:
+      name: "&fFireTruck"
+      vehicle_id: "firetruck"
+      price: 5000.0
+      icon: MINECART
+    garbagetruck:
+      name: "&fGarbage Truck"
+      vehicle_id: "garbagetruck"
+      price: 5000.0
+      icon: MINECART
+    hearse:
+      name: "&fHearse"
+      vehicle_id: "hearse"
+      price: 5000.0
+      icon: MINECART
+    helicopter:
+      name: "&fHelicopter"
+      vehicle_id: "helicopter"
+      price: 5000.0
+      icon: MINECART
+    helicopterorange:
+      name: "&fHelicopter[Orange]"
+      vehicle_id: "helicopterorange"
+      price: 5000.0
+      icon: MINECART
+    jeep:
+      name: "&fJeep"
+      vehicle_id: "jeep"
+      price: 5000.0
+      icon: MINECART
+    ladaniva:
+      name: "&fLadaNiva"
+      vehicle_id: "ladaniva"
+      price: 5000.0
+      icon: MINECART
+    lamborghini:
+      name: "&fLamborghini"
+      vehicle_id: "lamborghini"
+      price: 5000.0
+      icon: MINECART
+    mig1:
+      name: "&fMiG1"
+      vehicle_id: "mig1"
+      price: 5000.0
+      icon: MINECART
+    moskvitch:
+      name: "&fMoskvitch"
+      vehicle_id: "moskvitch"
+      price: 5000.0
+      icon: MINECART
+    motorcycle:
+      name: "&fMotorcycle"
+      vehicle_id: "motorcycle"
+      price: 5000.0
+      icon: MINECART
+    newsvan:
+      name: "&fNews Van"
+      vehicle_id: "newsvan"
+      price: 5000.0
+      icon: MINECART
+    police:
+      name: "&fPolice Car"
+      vehicle_id: "police"
+      price: 5000.0
+      icon: MINECART
+    polikarpov:
+      name: "&fPolikarpov"
+      vehicle_id: "polikarpov"
+      price: 5000.0
+      icon: MINECART
+    presidentiallimo:
+      name: "&fPresidential Limo"
+      vehicle_id: "presidentiallimo"
+      price: 5000.0
+      icon: MINECART
+    privateplane:
+      name: "&fPrivate Plane"
+      vehicle_id: "privateplane"
+      price: 5000.0
+      icon: MINECART
+    schoolbus:
+      name: "&fSchool Bus"
+      vehicle_id: "schoolbus"
+      price: 5000.0
+      icon: MINECART
+    semitrailertruck:
+      name: "&fSemi-Trailer Truck"
+      vehicle_id: "semitrailertruck"
+      price: 5000.0
+      icon: MINECART
+    shoppingcart:
+      name: "&fShopping Cart"
+      vehicle_id: "shoppingcart"
+      price: 5000.0
+      icon: MINECART
+    smalcivilboat:
+      name: "&fSmalCivilBoat"
+      vehicle_id: "smalcivilboat"
+      price: 5000.0
+      icon: MINECART
+    streetsweep:
+      name: "&fStreet Sweeper"
+      vehicle_id: "streetsweep"
+      price: 5000.0
+      icon: MINECART
+    sw_landspeeder:
+      name: "&fLand Speeder"
+      vehicle_id: "sw_landspeeder"
+      price: 5000.0
+      icon: MINECART
+    sw_speederbike:
+      name: "&fSpeeder Bike"
+      vehicle_id: "sw_speederbike"
+      price: 5000.0
+      icon: MINECART
+    swatvan:
+      name: "&fS.W.A.T Van"
+      vehicle_id: "swatvan"
+      price: 5000.0
+      icon: MINECART
+    t50:
+      name: "&fT50"
+      vehicle_id: "t50"
+      price: 5000.0
+      icon: MINECART
+    taxi:
+      name: "&fTaxi"
+      vehicle_id: "taxi"
+      price: 5000.0
+      icon: MINECART
+    trolley:
+      name: "&fTrolley Streetcar"
+      vehicle_id: "trolley"
+      price: 5000.0
+      icon: MINECART
+    ufo:
+      name: "&fUFO"
+      vehicle_id: "ufo"
+      price: 5000.0
+      icon: MINECART
+    unmarkedvan:
+      name: "&fUnmarked Van"
+      vehicle_id: "unmarkedvan"
+      price: 5000.0
+      icon: MINECART
+    warthog:
+      name: "&fM12 Warthog"
+      vehicle_id: "warthog"
       price: 5000.0
       icon: MINECART

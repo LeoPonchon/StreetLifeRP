@@ -209,6 +209,11 @@ public final class GarageService {
             return true;
         }
 
+        if (isQavSpawnTemplate(settings.spawnCommandTemplate()) && !qavVehicleExists(def.providerId())) {
+            player.sendMessage(prefix + ChatColor.RED + "Véhicule QAV2 introuvable: " + ChatColor.WHITE + def.providerId());
+            return true;
+        }
+
         if (!antiAbuse.allowAndMark(player.getUniqueId(), AntiAbuseAction.VEHICLE_BUY)) {
             player.sendMessage(prefix + ChatColor.RED + "Action trop rapide.");
             return true;
@@ -305,9 +310,13 @@ public final class GarageService {
             return true;
         }
 
-        despawnExistingQavVehicles(player);
-
         String template = s.spawnCommandTemplate();
+        if (isQavSpawnTemplate(template) && !qavVehicleExists(def.providerId())) {
+            player.sendMessage(prefix + ChatColor.RED + "Véhicule QAV2 introuvable: " + ChatColor.WHITE + def.providerId());
+            return true;
+        }
+
+        despawnExistingQavVehicles(player);
         String cmd = renderCommand(template, def.providerId(), player, spawn);
         if (cmd == null || cmd.isBlank()) {
             player.sendMessage(prefix + ChatColor.RED + "Commande de spawn non configurée.");
@@ -325,13 +334,7 @@ public final class GarageService {
     }
 
     private boolean trySpawnQavDirect(String template, String vehicleProviderId, Player player, Location spawn) {
-        if (template == null) return false;
-        String normalized = template.trim().toLowerCase(Locale.ROOT);
-        if (!normalized.equals("qav spawnvehicle %vehicle%")
-                && !normalized.equals("qualityarmoryvehicles spawnvehicle %vehicle%")
-                && !normalized.equals("qualityarmoryvehicles2 spawnvehicle %vehicle%")) {
-            return false;
-        }
+        if (!isQavSpawnTemplate(template)) return false;
 
         try {
             Class<?> api = Class.forName("me.zombie_striker.qav.api.QualityArmoryVehicles");
@@ -350,6 +353,32 @@ public final class GarageService {
         } catch (Throwable e) {
             plugin.getLogger().fine("QAV direct spawn unavailable: " + e.getClass().getSimpleName() + ": " + e.getMessage());
             return false;
+        }
+    }
+
+    private boolean isQavSpawnTemplate(String template) {
+        if (template == null) return false;
+        String normalized = template.trim().toLowerCase(Locale.ROOT);
+        return normalized.equals("qav spawnvehicle %vehicle%")
+                || normalized.equals("qualityarmoryvehicles spawnvehicle %vehicle%")
+                || normalized.equals("qualityarmoryvehicles2 spawnvehicle %vehicle%");
+    }
+
+    /**
+     * Best-effort validation: returns false only when QAV2 API is available and the vehicle doesn't exist.
+     */
+    private boolean qavVehicleExists(String providerId) {
+        if (providerId == null || providerId.isBlank()) return false;
+        try {
+            Class<?> api = Class.forName("me.zombie_striker.qav.api.QualityArmoryVehicles");
+            java.lang.reflect.Method getVehicle = api.getMethod("getVehicle", String.class);
+            Object vehicle = getVehicle.invoke(null, providerId);
+            return vehicle != null;
+        } catch (ClassNotFoundException e) {
+            // If the API isn't present, don't block; command dispatch may still work in some setups.
+            return true;
+        } catch (Throwable ignored) {
+            return true;
         }
     }
 
@@ -843,6 +872,7 @@ public final class GarageService {
                     if (v == null) continue;
                     String displayName = v.getString("name", key);
                     String providerId = v.getString("vehicle_id", key);
+                    if (providerId == null || providerId.isBlank()) providerId = key;
                     double price = v.getDouble("price", 0.0);
                     String iconName = v.getString("icon", "MINECART");
                     Material icon;
